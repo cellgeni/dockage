@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+"""Verify user+password using LDAP"""
+
+import os
+import sys
+import ldap3
+import logging
+from ldap3.core.exceptions import LDAPInvalidCredentialsResult
+
+def authenticate(user):
+    """
+    Authenticate a user against LDAP
+
+    Username is read from sys.arv and must match the same user
+    that launched the process (USER environment variable)
+    Password is read from sys.stdin
+    """
+    try:
+        # make sure the user matches the current user
+        if user != os.environ['USER']:
+            logging.error(f"invalid credentials: {e}")
+            sys.exit(0)
+        # authenticate with LDAP
+        password = sys.stdin.read().strip()
+        DN = f"uid={user},ou=people,dc=sanger,dc=ac,dc=uk"
+        server = ldap3.Server("ldap-ro", get_info=ldap3.ALL)
+        with ldap3.Connection(server=server, user=DN, password=password, auto_bind=False, raise_exceptions=True) as conn:
+            try:
+              conn.bind()
+              logging.info("authenticated")
+              sys.exit(0)
+            except LDAPInvalidCredentialsResult as e:
+              logging.error(f"invalid credentials: {e}")
+              sys.exit(1)
+            except Exception as e:
+              logging.error(f"fail to authenticate: {e}")
+              sys.exit(2)
+    except Exception as e:
+        logging.error(f"ldap_auth failed {e}")
+        sys.exit(3)
+
+if __name__ == '__main__':
+    # /usr/lib/rstudio-server/bin/ldap_auth <user> rstudio 1 <stdin:password>
+    arguments = sys.argv[1:]
+    authenticate(user = arguments[0])

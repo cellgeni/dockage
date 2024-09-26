@@ -1,0 +1,23 @@
+#/bin/bash
+
+
+# should this be a Makefile?
+#
+versions=( '4.1.3' '4.2.3' '4.3.0' )
+
+echo "[+] Versions to build: ${versions}"
+
+for ver in "${versions[@]}";
+do
+  echo "[+] Building image for R version ${ver}"
+  im="rstudio:r-${ver}"
+  docker build --build-arg "R_VERSION=${ver}" --tag "${im}" -f Dockerfile .
+
+  sif="rstudio-${ver}.sif"
+  echo "== Build singularity image file '${sif}'"
+  singularity build "${sif}" "docker-daemon://${im}"
+
+  echo "== Cleanup"
+  rm -f "${sif}.tar"
+
+done

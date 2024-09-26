@@ -1,0 +1,21 @@
+name: bavaria
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8.8
+  - pip>=1.20
+  - keras==2.4.3 
+  - tensorflow-gpu==2.2
+  - numpy==1.19.5
+  - python-igraph
+  - pandas 
+  - scikit-learn
+  - scipy==1.4.1
+  - ipykernel
+  - pip:
+     - louvain
+     - scanpy
+     - anndata
+     - git+https://github.com/BIMSBbioinfo/bavaria
+

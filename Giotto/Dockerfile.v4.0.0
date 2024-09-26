@@ -1,0 +1,24 @@
+FROM rocker/rstudio:4.3.0
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONNOUSERSITE=1
+ENV PIP_NO_CACHE_DIR=1
+ENV VENV_PATH=/env
+ENV PATH="${VENV_PATH}/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	build-essential python3 python3-pip python3-venv python3-dev python-is-python3 \
+        libglpk-dev libxml2-dev libpng-dev libicu-dev libgdal-dev gdal-bin libgeos-dev libproj-dev libsqlite3-dev imagemagick libmagick++-dev
+
+RUN python3 -m venv ${VENV_PATH} && \
+    . ${VENV_PATH}/bin/activate && \
+    pip install -U pip wheel setuptools && \
+    pip install pandas python-igraph networkx python-louvain leidenalg scikit-learn smfishHmrf
+
+ENV GIOTTO_VERSION="v4.0.0"
+RUN Rscript -e 'install.packages("remotes")' && \
+    Rscript -e 'remotes::install_github("drieslab/Giotto@'${GIOTTO_VERSION}'")'
+
+    COPY Dockerfile /docker/
+RUN chmod -R 755 /docker
+    

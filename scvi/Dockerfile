@@ -2,8 +2,10 @@ FROM nvcr.io/nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
 SHELL ["/bin/bash", "-c"]
 
-ENV PYTHONNOUSERSITE=1
-ENV PATH="/env/bin:${PATH}"
+ENV DEBIAN_FRONTEND=noninteractive
+ENV VENV_PATH="/env"
+ENV PATH="${VENV_PATH}/bin:${VENV_PATH}:${PATH}"
+ENV PYTHONNOUSERSITE=true
 
 # OS dependecies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -13,22 +15,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # create venv
-RUN python -m venv /env
+RUN python -m venv /env && \
+    . ${VENV_PATH}/bin/activate && \
+    pip install -U pip wheel setuptools
 
-# update pip/wheel
-RUN source /env/bin/activate && \
-    pip install -U pip wheel setuptools --no-cache-dir
 # pre install jax/torch
-RUN . /env/bin/activate && \
+RUN . ${VENV_PATH}/bin/activate && \
     TORCH=2.3.0 CUDA=cu121 && \
     pip install "jax[cuda12]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html --no-cache-dir && \
-    pip install torch==${TORCH}+${CUDA} torchvision --index-url "https://download.pytorch.org/whl/${CUDA}" --no-cache-dir
+    pip install torch==${TORCH}+${CUDA} torchvision --index-url "https://download.pytorch.org/whl/${CUDA}" --no-cache-dir && \
+    pip install papermill jupyterlab 
 
-RUN apt-get update && apt-get install build-essential 
 # install scvi tools and scarches
-RUN source /env/bin/activate && \
-    pip install "scvi-tools[tutorials]" \
-      papermill jupyterlab --no-cache-dir
+RUN . /env/bin/activate && \
+    pip install "scvi-tools[tutorials]"
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

@@ -47,4 +47,3 @@ RUN mkdir -p /.singularity.d/env && \
     echo '. "${CONDA_PATH}/etc/profile.d/conda.sh"' >> /.singularity.d/env/99-conda.sh && \
     echo "conda activate $CLAM_ENV_NAME" >> /.singularity.d/env/99-conda.sh && \ 
     cat /.singularity.d/env/99-conda.sh >> ~/.bashrc
-

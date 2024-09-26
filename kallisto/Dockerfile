@@ -1,12 +1,8 @@
 FROM r-base:4.0.4
 
-RUN set -xe \
-    && apt-get -y update \
-    && apt-get -y install libcurl4-openssl-dev \ 
-    && apt-get -y install libssl-dev \
-    && apt-get -y install libhdf5-dev \
-    && apt-get -y install libxml2-dev \
-    && apt-get -y install libboost-all-dev
+RUN apt-get -y update && apt-get -y install \
+    libcurl4-openssl-dev libssl-dev \
+    libhdf5-dev libxml2-dev libboost-all-dev
 
 # Install BiocManager
 RUN Rscript -e 'install.packages(c("remotes", "BiocManager"))' && \

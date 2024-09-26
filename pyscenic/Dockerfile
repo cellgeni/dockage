@@ -1,16 +1,14 @@
-FROM ubuntu:20.04
+FROM python:3.11
 
 ENV DEBIAN_FRONTEND=noninteractive 
+ENV VIRTUAL_ENV=/env
+ENV PATH=$VIRTUAL_ENV/bin:$VIRTUAL_ENV:$PATH
+ENV NUMBA_CACHE_DIR=/tmp
 
-RUN apt-get update && apt-get install -y cmake python-is-python3
+RUN python -m venv $VIRTUAL_ENV && \
+    . $VIRTUAL_ENV/bin/activate && \
+    pip install --upgrade pip wheel setuptools && \
+    scanpy pyscenic
 
-RUN set -xe \
-    && apt-get -y update \
-    && apt-get -y install python3 \
-    && apt-get -y install python3-dev \
-    && apt-get -y install python3-pip 
-
-RUN pip3 install --upgrade pip
-
-RUN pip3 install --upgrade --no-cache \
-	scanpy pyscenic==0.11.2
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker

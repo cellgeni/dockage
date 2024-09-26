@@ -1,6 +1,4 @@
-ARG ubuntu_version=20.04
-
-FROM ubuntu:$ubuntu_version
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive 
 
@@ -16,5 +14,7 @@ RUN set -xe \
 RUN pip3 install --upgrade pip
 
 RUN pip3 install --upgrade --no-cache \
-    scvi-tools scanpy==1.8.2 scarches jupyter \
-    igraph==0.9.9 leidenalg==0.8.10
+    scvi-tools scanpy scarches jupyterlab papermill igraph leidenalg
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker

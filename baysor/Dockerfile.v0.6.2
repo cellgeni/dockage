@@ -1,0 +1,22 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y \
+        build-essential procps git vim wget ca-certificates unzip zlib1g-dev \
+        python3 python3-venv python3-pip python-is-python3
+# python
+ENV VENV_PATH="/env"
+ENV PATH="${PATH}:${VENV_PATH}/bin"
+RUN python3 -m venv /env && \
+    . $VENV_PATH/bin/activate && \
+    pip install -U pip --no-cache-dir && \
+    pip install pandas scipy pyarrow scanpy zarr tifffile imagecodecs --no-cache-dir
+
+# baysor
+ENV BAYSOR_VERSION=0.6.2
+RUN wget -q https://github.com/kharchenkolab/Baysor/releases/download/v${BAYSOR_VERSION}/baysor-x86_x64-linux-v${BAYSOR_VERSION}_build.zip && \ 
+    unzip baysor-x86_x64-linux-v${BAYSOR_VERSION}_build.zip && \
+    mv bin/baysor /opt/ && \
+    rm baysor-x86_x64-linux-v${BAYSOR_VERSION}_build.zip
+ENV PATH="${PATH}:/opt/baysor/bin"
+COPY Dockerfile /docker/

@@ -20,4 +20,3 @@ RUN Rscript -e 'install.packages(c("remotes"))'
 
 # schard
 RUN Rscript -e 'remotes::install_github("cellgeni/schard", upgrade = "always", dependencies = TRUE)'
-

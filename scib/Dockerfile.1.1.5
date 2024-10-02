@@ -1,0 +1,35 @@
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+ENV VENV_PATH="/env"
+ENV PATH="${VENV_PATH}/bin:${VENV_PATH}:${PATH}"
+ENV NUMBA_CACHE_DIR=/tmp
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+        procps git wget build-essential software-properties-common lsb-release
+# get python
+RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update && apt-get install -y \
+        python3.10 python3.10-dev python3.10-venv python-is-python3
+# get R
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
+    add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" && \
+    apt-get update && apt-get install -y r-base
+# create venv
+RUN python -m venv "${VENV_PATH}" && \
+    . "${VENV_PATH}/bin/activate" && \
+    pip install --upgrade pip wheel setuptools
+# install scib
+ENV SCIB_VERSION=1.1.5
+RUN wget "https://github.com/theislab/scib/archive/refs/tags/v${SCIB_VERSION}.tar.gz" && \
+    tar xvf "v${SCIB_VERSION}.tar.gz" -C /opt && \
+    rm "v${SCIB_VERSION}.tar.gz"
+RUN . "${VENV_PATH}/bin/activate" && \
+     pip install 'numpy<2' && \
+     pip install -e /opt/scib-${SCIB_VERSION}'[rpy2,louvain,bbknn,scanorama,scgen,scvi,harmony]' && \
+     pip install papermill jupyterlab
+
+RUN Rscript -e "install.packages('remotes')"
+RUN Rscript -e "remotes::install_github('theislab/kBET')"
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker

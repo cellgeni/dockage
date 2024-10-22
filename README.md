@@ -60,6 +60,8 @@ For best compatiblity with current drivers on the HPC we recommend using:
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 ```
 
+### ⚠️ Do not use conda when creating containers
+
 
 # Contributing
 We welcome contributions! If you have improvements to the existing Dockerfiles or want to add support for more bioinformatics tools, please feel free to open a pull request.

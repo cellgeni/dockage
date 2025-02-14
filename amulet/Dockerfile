@@ -25,12 +25,6 @@ RUN wget https://github.com/UcarLab/AMULET/releases/download/v1.1/AMULET-v1.1.zi
     chmod +x AMULET.py && \
     rm /tmp/amulet.zip
 
-# RUN git clone --depth 1 --branch v1.1 https://github.com/UcarLab/AMULET.git /opt/amulet && \
-#     cd /opt/amulet && \
-#     chmod +x AMULET.sh && \
-#     chmod +x AMULET.py
-
-
 # Add shebang to python scripts and add them to the PATH
 RUN sed -i '1i#!/env/bin/python3.7' /opt/amulet/AMULET.py && \
     sed -i '1i#!/env/bin/python3.7' /opt/amulet/FragmentFileOverlapCounter.py && \

@@ -1,0 +1,31 @@
+FROM julia:1.10
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y \
+    build-essential procps vim wget unzip
+
+ENV BAYSOR_VERSION=0.7.1
+ENV JULIA_CPU_TARGET="x86-64-v3"
+ENV JULIA_NUM_THREADS=30
+
+# get source release from repo
+RUN wget https://github.com/kharchenkolab/Baysor/archive/refs/tags/v${BAYSOR_VERSION}.zip && \
+    mkdir -p /src && \
+    unzip v${BAYSOR_VERSION}.zip -d /src && \
+    rm -rf v${BAYSOR_VERSION}.zip
+
+# remove tests before building
+RUN sed -i 's|^include(joinpath(pkgdir(Baysor), "test", "runtests.jl"))|# &|' /src/Baysor-${BAYSOR_VERSION}/deps/precompile.jl
+# install and build
+RUN julia -e 'using Pkg; Pkg.add("Comonicon");'
+# copy custom Artifacts.toml to force MKL download
+COPY Artifacts.toml /src/Baysor-${BAYSOR_VERSION}/
+RUN julia -e 'using Pkg; Pkg.develop(path="/src/Baysor-"*ENV["BAYSOR_VERSION"]);' 
+RUN julia -e 'using Pkg, Baysor; Pkg.activate(pkgdir(Baysor)); Pkg.instantiate();'
+RUN julia -e 'using Pkg, Baysor; Pkg.activate(pkgdir(Baysor)); Pkg.build();'
+RUN mv /root/.julia/scratchspaces/cc9f9468-1fbe-11e9-0acf-e9460511877c /opt/baysor && \
+    sed -i 's@/root/.julia/scratchspaces/cc9f9468-1fbe-11e9-0acf-e9460511877c@/opt/baysor@g' /root/.julia/bin/baysor && \
+    mv /root/.julia/bin/baysor /usr/bin/baysor
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker

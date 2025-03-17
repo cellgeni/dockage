@@ -15,10 +15,12 @@ RUN python -m venv $VENV_PATH && \
     . $VENV_PATH/bin/activate && \
     pip install jupyterlab setuptools wheel && \
     pip install scipy==1.11.3 && \
-    pip install 'scanpy[leiden]'
+    pip install matplotlib==3.8.1 && \
+    pip install 'scanpy[leiden]==1.9.6'
 
 RUN . $VENV_PATH/bin/activate && \ 
-    pip install anndata2ri
+    pip install anndata2ri && \
+    pip install rpy2==3.5.14
 
 RUN Rscript -e "install.packages(c('BiocManager', 'statmod','tidyverse','reshape2','patchwork'))" && \
     Rscript -e "BiocManager::install('edgeR')"

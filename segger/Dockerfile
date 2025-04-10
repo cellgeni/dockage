@@ -29,10 +29,12 @@ RUN python -m pip install --no-cache-dir --upgrade pip && \
     pip install -e "/workspace/segger_dev[cuda12]"
 
 RUN pip uninstall -y torch torchvision pandas numpy shapely && \
-    pip install torchvision pandas torch==2.5.1 numpy==2.0.2 shapely==2.0.6
+    pip install torchvision pandas torch==2.5.1 numpy==2.0.2 shapely==2.0.6 fire
 
 # expose ports for debugpy and jupyterlab
 # EXPOSE 5678 8888
+
+COPY predict_fast.py /workspace/segger_dev/src/segger/cli/predict_fast.py
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

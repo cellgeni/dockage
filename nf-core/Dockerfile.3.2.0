@@ -1,0 +1,9 @@
+FROM nfcore/tools
+
+ENV PATH="/usr/local/bin:$PATH"
+
+RUN pip install jupyterlab papermill
+
+# Copy Dockerfile to the container
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker

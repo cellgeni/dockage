@@ -64,8 +64,13 @@ RUN echo "STAR version: ${star_version}" >> versions.txt && \
     echo "Parallel fastq-dump version: ${pfq_version}" >> versions.txt 
 
 # Clone the reprocess_public_10x and STARsolo repositories from the modularise branch into /opt
-RUN git clone -b modularise https://github.com/cellgeni/reprocess_public_10x.git /opt/reprocess_public_10x
-RUN git clone -b modularise https://github.com/cellgeni/STARsolo.git /opt/STARsolo
+RUN git clone -b modularise https://github.com/cellgeni/reprocess_public_10x.git /opt/reprocess_public_10x && \
+    cd /opt/reprocess_public_10x && \
+    echo "cellgeni/reprocess_public_10x version: $(git rev-parse HEAD)" >> /versions.txt
+
+RUN git clone -b modularise https://github.com/cellgeni/STARsolo.git /opt/STARsolo && \
+    cd /opt/STARsolo && \
+    echo "cellgeni/STARsolo version: $(git rev-parse HEAD)" >> /versions.txt
 
 # Update PATH to include all scripts from the cloned repositories
 ENV PATH="${PATH}:/opt/reprocess_public_10x/scripts"

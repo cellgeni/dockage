@@ -56,7 +56,8 @@ RUN python -m venv /env && \
 WORKDIR /opt
 RUN git clone https://github.com/bioFAM/scDoRI.git /opt/scDoRI
 RUN . /env/bin/activate && \
-    pip install -e '/opt/scDoRI'
+    pip install -e '/opt/scDoRI' && \
+    pip install papermill jupyterlab 
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

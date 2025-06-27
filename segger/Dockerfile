@@ -4,11 +4,20 @@ FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 # Set environment variables
 # ENV PYTHONPATH=/workspace/segger_dev/src:$PYTHONPATH
 
+# Set environment variables to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 # Set working directory
 WORKDIR /workspace
 
 # Install essential system tools and Python
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update -y \
+    && apt-get install -y --no-install-recommends \
     git \
     wget \
     curl \
@@ -16,10 +25,12 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     htop \
     vim \
     build-essential \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python-is-python3 \
+    python3.11 \
+    python3.11-venv \
+    python3.11-dev \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 \
+    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -34,7 +45,7 @@ RUN pip uninstall -y torch torchvision pandas numpy shapely && \
 # expose ports for debugpy and jupyterlab
 # EXPOSE 5678 8888
 
-COPY predict_fast.py /workspace/segger_dev/src/segger/cli/predict_fast.py
+# COPY predict_fast.py /workspace/segger_dev/src/segger/cli/predict_fast.py
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

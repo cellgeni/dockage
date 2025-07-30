@@ -28,7 +28,7 @@ RUN wget -O /usr/bin/bedtools https://github.com/arq5x/bedtools2/releases/downlo
 RUN python3 -m venv $VENV_PATH && \
     . $VENV_PATH/bin/activate && \
     pip install -U pip wheel setuptools && \
-    pip install "numpy==1.25.4" "scipy==1.15.3" && \
+    pip install "numpy==1.25.*" "scipy==1.15.3" && \
     pip install "torch==${TORCH}+${CUDA}" --index-url "https://download.pytorch.org/whl/${CUDA}" && \
     pip install pyg_lib torch_scatter torch_sparse -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html"
 

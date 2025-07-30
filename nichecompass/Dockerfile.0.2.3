@@ -33,7 +33,7 @@ RUN python3 -m venv $VENV_PATH && \
     pip install pyg_lib torch_scatter torch_sparse -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html"
 
 RUN . $VENV_PATH/bin/activate && \
-    pip install papermill jupyterlab ipykernel "nichecompass[all]==${NICHECOMPASS_VERSION}"
+    pip install papermill jupyterlab ipykernel "nichecompass[all]==${NICHECOMPASS_VERSION}" 'squidpy[interactive]'
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

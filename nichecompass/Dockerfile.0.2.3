@@ -31,6 +31,7 @@ RUN python3 -m venv $VENV_PATH && \
     pip install pyg_lib torch_scatter torch_sparse -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html"
 
 RUN . $VENV_PATH/bin/activate && \
+    pip install scanpy "numpy>=1.23.0" && \
     pip install papermill jupyterlab ipykernel gdown squidpy "nichecompass[all]==${NICHECOMPASS_VERSION}" 
 
 COPY Dockerfile /docker/

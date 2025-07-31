@@ -30,7 +30,8 @@ RUN python3 -m venv $VENV_PATH && \
     pip install -U pip wheel setuptools && \
     pip install "numpy==1.25.*" "scipy==1.15.3" && \
     pip install "torch==${TORCH}+${CUDA}" --index-url "https://download.pytorch.org/whl/${CUDA}" && \
-    pip install pyg_lib torch_scatter torch_sparse -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html"
+    pip install "pyg_lib==0.4.0+pt22cu121" "torch_scatter==2.1.2+pt22cu121" "torch_sparse==0.6.18+pt22cu121" \
+    -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html"
 
 RUN . $VENV_PATH/bin/activate && \
     pip install papermill jupyterlab ipykernel "nichecompass[all]==${NICHECOMPASS_VERSION}" 'squidpy[interactive]'

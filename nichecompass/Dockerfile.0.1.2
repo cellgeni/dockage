@@ -25,4 +25,4 @@ RUN TORCH=2.2.0 CUDA=cu118 && \
     pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html && \
     pip install papermill jupyterlab ipykernel "nichecompass[all]==${NICHECOMPASS_VERSION}" --no-cache-dir
 
-COPY Dockerfile /
+COPY Dockerfile.0.1.2 /

@@ -1,15 +1,12 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvcr.io/nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
 SHELL ["/bin/bash", "-c"]
 
-ENV VENV_PATH="/env"
-ENV PATH="${VENV_PATH}/bin:${PATH}"
-ENV PIP_NO_CACHE_DIR=off
-ENV NUMBA_CACHE_DIR=/tmp
 ENV PYTHONNOUSERSITE=1
+ENV PATH="/env/bin:${PATH}"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      procps git python3 python3-dev python3-venv python3-pip python-is-python3 wget && \
+    procps git python3 python3-dev python3-venv python3-pip python-is-python3 wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -18,15 +15,12 @@ RUN wget -O /usr/bin/bedtools https://github.com/arq5x/bedtools2/releases/downlo
     chmod a+x /usr/bin/bedtools
 
 # install python packagess
-RUN TORCH=2.2.0 CUDA=cu121 && \
-    python3 -m venv $VENV_PATH && \
-    . $VENV_PATH/bin/activate && \
-    pip install -U pip wheel setuptools
-RUN . $VENV_PATH/bin/activate && \
+RUN TORCH=2.2.0 CUDA=cu118 && \
+    python3 -m venv /env && \
+    source /env/bin/activate && \
+    pip install -U pip wheel --no-cache-dir && \
     pip install "torch==${TORCH}+${CUDA}" --index-url "https://download.pytorch.org/whl/${CUDA}" --no-cache-dir && \
-    pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html
-RUN . $VENV_PATH/bin/activate && \
+    pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html && \
     pip install papermill jupyterlab ipykernel nichecompass[all] --no-cache-dir
 
-COPY Dockerfile /docker/
-RUN chmod -R 755 /docker
+COPY Dockerfile /

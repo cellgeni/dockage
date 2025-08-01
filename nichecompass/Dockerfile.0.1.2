@@ -2,6 +2,8 @@ FROM nvcr.io/nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
 SHELL ["/bin/bash", "-c"]
 
+ARG NICHECOMPASS_VERSION="0.1.2"
+
 ENV PYTHONNOUSERSITE=1
 ENV PATH="/env/bin:${PATH}"
 
@@ -21,6 +23,6 @@ RUN TORCH=2.2.0 CUDA=cu118 && \
     pip install -U pip wheel --no-cache-dir && \
     pip install "torch==${TORCH}+${CUDA}" --index-url "https://download.pytorch.org/whl/${CUDA}" --no-cache-dir && \
     pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html && \
-    pip install papermill jupyterlab ipykernel nichecompass[all] --no-cache-dir
+    pip install papermill jupyterlab ipykernel "nichecompass[all]==${NICHECOMPASS_VERSION}" --no-cache-dir
 
 COPY Dockerfile /

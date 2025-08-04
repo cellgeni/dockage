@@ -20,9 +20,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# get bedtools
-RUN wget -O /usr/bin/bedtools https://github.com/arq5x/bedtools2/releases/download/v2.31.0/bedtools.static && \
-    chmod a+x /usr/bin/bedtools
+# # get bedtools
+# RUN wget -O /usr/bin/bedtools https://github.com/arq5x/bedtools2/releases/download/v2.31.0/bedtools.static && \
+#     chmod a+x /usr/bin/bedtools
 
 # install python packages
 RUN python3 -m venv $VENV_PATH && \

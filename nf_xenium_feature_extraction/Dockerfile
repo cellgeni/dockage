@@ -15,15 +15,15 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install setuptools/wheel
-RUN pip install --upgrade pip setuptools wheel
-
-#Upgrade pip
-RUN pip install --upgrade pip
-
 #Copy the requirements and install all dependencies
 COPY requirements.txt /xenium_work
-RUN pip install --no-deps -r requirements.txt
+
+# Upgrade pip and install setuptools/wheel
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-deps -r requirements.txt
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker
 
 #Run the script
 CMD ["python"]

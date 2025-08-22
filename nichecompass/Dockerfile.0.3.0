@@ -32,8 +32,11 @@ RUN python3 -m venv $VENV_PATH && \
 RUN wget -O /usr/bin/bedtools https://github.com/arq5x/bedtools2/releases/download/v2.31.0/bedtools.static && \
     chmod a+x /usr/bin/bedtools
 
+# pre-download reference data
+COPY resources/data /app/data
+
 # import python packages to pre-download ref data
-COPY nichecompass_import.py /app/nichecompass_import.py
+COPY resources/nichecompass_import.py /app/nichecompass_import.py
 RUN . "$VENV_PATH/bin/activate" && \
     python /app/nichecompass_import.py
 

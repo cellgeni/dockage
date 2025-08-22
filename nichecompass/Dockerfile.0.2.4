@@ -39,5 +39,5 @@ COPY nichecompass_import.py /app/nichecompass_import.py
 RUN . "$VENV_PATH/bin/activate" && \
     python /app/nichecompass_import.py
 
-COPY Dockerfile /docker/
+COPY Dockerfile.0.2.4 /docker/
 RUN chmod -R 755 /docker

@@ -13,3 +13,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV UV_PYTHON_INSTALL_DIR=/opt
 RUN uv python install 3.12 && uv pip install umap-learn --system
 
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker
+

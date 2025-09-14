@@ -1,7 +1,8 @@
 FROM ubuntu:22.04
 
-ARG BF2RAW_VERSION="0.9.3"
-ARG RAW2OME_VERSION="0.7.1"
+ARG BF2RAW_VERSION="0.11.0"
+ARG RAW2OME_VERSION="0.8.0"
+ARG BFTOOLS_VERSION="8.3.0"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -31,7 +32,7 @@ RUN wget -q "https://github.com/glencoesoftware/raw2ometiff/releases/download/v$
 ENV PATH="/opt/raw2ometiff/bin:${PATH}"
 
 # get bftools
-RUN wget -q "https://downloads.openmicroscopy.org/bio-formats/latest/artifacts/bftools.zip" -O /tmp/bftools.zip && \
+RUN wget -q "https://downloads.openmicroscopy.org/bio-formats/${BFTOOLS_VERSION}/artifacts/bftools.zip" -O /tmp/bftools.zip && \
     unzip /tmp/bftools.zip -d /opt/ && \
     chmod +x /opt/bftools/* && \
     rm /tmp/bftools.zip
@@ -39,3 +40,4 @@ ENV PATH="/opt/bftools:${PATH}"
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker
+

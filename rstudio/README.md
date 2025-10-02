@@ -5,7 +5,9 @@
 |**Name** | RStudio |
 | **Description** | This container is mainly for running RStudio (now Posit). The base image containging rstudio comes from the Rocker Project |
 | **URL/repo** | https://github.com/rocker-org/rocker-versioned2 |
-| **Version(s)** | 4.3.0 |
+| **Version(s)** | `4.4.1`, `4.5.1` |
+| **QUAY** | https://quay.io/repository/cellgeni/rstudio |
+
 
 # Singularity considerations
 

@@ -1,0 +1,15 @@
+clij2-fft==0.28
+pyopencl==2025.1
+ocl==0.12
+pocl-binary-distribution==3.0
+cupy-cuda11x
+cucim-cu11==25.4.0
+pyarrow==19.0.1
+bioformats_jar==2020.5.27
+aicsimageio==4.14.0
+fire==0.6.0
+numcodecs==0.15.1
+blosc==1.11.2
+pyopencl==2025.1
+ocl==0.12
+pocl-binary-distribution==3.0

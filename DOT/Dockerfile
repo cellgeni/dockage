@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates build-essential gcc-13 g++-13 gfortran-13 \
     libcurl4-openssl-dev libssl-dev libxml2-dev \
     libicu-dev libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev \
-    libpng-dev libjpeg-dev libtiff-dev pandoc \
+    libpng-dev libjpeg-dev libtiff-dev pandoc procps \
   && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
   && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100 \
   && update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-13 100 \

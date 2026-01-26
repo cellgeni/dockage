@@ -1,4 +1,4 @@
-FROM rocker/rstudio:4.4.1
+FROM rocker/rstudio:4.5.2
 
 SHELL ["/bin/bash", "-c"]
 
@@ -27,3 +27,4 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/R/lib:/usr/local/lib:/usr/lib/x86_64-linux-gn
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker
+RUN chmod -R 777 /etc/rstudio

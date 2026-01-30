@@ -1,0 +1,38 @@
+FROM rocker/rstudio:4.5.1
+
+SHELL ["/bin/bash", "-c"]
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV VENV_PATH="/env"
+ENV PATH="${VENV_PATH}/bin:${PATH}"
+ENV PYTHONNOUSERSITE=true
+
+RUN apt-get update && apt-get install -y -qq --no-install-recommends \
+	libgsl0-dev libxml2-dev libboost-all-dev libssl-dev libhdf5-dev unzip curl \
+	libudunits2-dev libgdal-dev libgeos-dev libproj-dev libgmp3-dev libreadline-dev \
+	build-essential libglpk-dev xorg-dev libreadline-dev libc6-dev libclang-dev \
+	libbz2-dev liblzma-dev libcurl4-openssl-dev libcairo2-dev libatlas-base-dev \
+	libunwind-dev libpango1.0-dev tcl-dev tk-dev openjdk-17-jdk gfortran gnupg2 \
+	lsb-release software-properties-common libpng-dev zlib1g-dev libicu-dev \
+	libfftw3-dev libgfortran5 libgraphviz-dev libgtk-3-dev libgtkmm-3.0-dev \
+	libxt-dev pandoc python3-venv
+RUN locale-gen
+
+# create virtual environment and install Extra Packages
+RUN python3 -m venv "${VENV_PATH}" && \
+    . "${VENV_PATH}/bin/activate" && \
+    pip install -U pip wheel ldap3
+
+ENV LD_LIBRARY_PATH=/usr/local/lib/R/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu:/usr/lib/jvm/java-17-openjdk-amd64/lib/server
+
+RUN echo 'options(repos = c(REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/bookworm/latest"))' > ~/.Rprofile
+RUN Rscript -e 'install.packages("pak")'
+RUN Rscript -e 'pak::pkg_install("Rhdf5lib")'
+RUN Rscript -e 'pak::pkg_install("timothy-barry/ondisc")'
+RUN Rscript -e 'pak::pkg_install("katsevich-lab/sceptredata")'
+RUN Rscript -e 'pak::pkg_install("katsevich-lab/sceptre")'
+RUN Rscript -e 'pak::pkg_install("IRkernel")'
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker
+

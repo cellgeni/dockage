@@ -42,10 +42,10 @@ dockage/
 # Considerations when creating images
 
 ### 🐍 Python-based images
-Make sure you install `jupyterlab` and `papermill`.
+Make sure you install `jupyterlab`, `ipykernel` and `papermill`.
 
 ### 🐘 R-based images
-Make sure you install `rstudio`.
+Make sure you use [rocker/rstudio](https://hub.docker.com/r/rocker/rstudio) base image and install [IRkernel](https://github.com/IRkernel/IRkernel) package to support Jupyter kernel use.
 
 ### Dockerfile in docker image
 Copy the Dockerfile to the container image as the last step. Add this as the last two lines of your Dockerfile:

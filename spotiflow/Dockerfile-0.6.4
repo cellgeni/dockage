@@ -1,9 +1,17 @@
-# Use multi-stage builds
-FROM rapidsai/miniforge-cuda:cuda11.8.0-base-ubuntu22.04-py3.10 as builder
+# Use multi-stage builds (no conda)
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 AS builder
 
-# Install git and clean up in the same layer
+# Install system deps and clean up in the same layer
 RUN apt-get update && \
-    apt-get install -y git build-essential procps && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        git \
+        procps \
+        python3.10 \
+        python3.10-venv \
+        python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
@@ -11,13 +19,20 @@ WORKDIR /opt
 # COPY scripts/python /scripts/
 COPY Dockerfile /docker
 
-# Update environment and set permissions in the same layer
-# RUN mamba env update -n base -f /tmp/conda-env.yml && \
+ENV VIRTUAL_ENV="/opt/venv"
+ENV PATH="/opt/venv/bin:/root/.local/bin:${PATH}"
+ENV UV_CACHE_DIR="/tmp/uv-cache"
+
+# Install uv and project deps into a dedicated venv
 RUN chmod -R 755 /usr/bin/ && \
     chmod -R 755 /docker && \
-    chmod -R 755 /opt/
-RUN /opt/conda/bin/conda run -n base pip install spotiflow==0.6.4 ImageTileProcessor==0.1.16 pyarrow
-    # chmod -R 755 /scripts/ && \
+    chmod -R 755 /opt/ && \
+    curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    python3.10 -m venv "$VIRTUAL_ENV" && \
+    uv pip install --no-cache --python "$VIRTUAL_ENV/bin/python" \
+        spotiflow==0.6.4 \
+        ImageTileProcessor==0.1.16 \
+        pyarrow
 
 ENV SPOTIFLOW_CACHE_DIR="/models/"
 
@@ -25,11 +40,21 @@ RUN mkdir -p $SPOTIFLOW_CACHE_DIR && \
     python -c "from spotiflow.model import Spotiflow;Spotiflow.from_pretrained('general');Spotiflow.from_pretrained('smfish_3d')"
 
 # Final stage
-FROM rapidsai/miniforge-cuda:cuda11.8.0-base-ubuntu22.04-py3.10
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        python3.10 \
+        libstdc++6 \
+        libgcc-s1 && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV SPOTIFLOW_CACHE_DIR="/models/"
+ENV VIRTUAL_ENV="/opt/venv"
+ENV PATH="/opt/venv/bin:${PATH}"
 
-COPY --from=builder /opt /opt
+COPY --from=builder /opt/venv /opt/venv
 # COPY --from=builder /scripts /scripts
 COPY --from=builder /docker /docker
 COPY --from=builder $SPOTIFLOW_CACHE_DIR $SPOTIFLOW_CACHE_DIR

@@ -32,7 +32,7 @@ RUN uv pip install -U pip setuptools wheel
 WORKDIR /opt/src
 RUN git clone --depth 1 https://bitbucket.org/liulab/mageck.git && \
     uv pip install ./mageck 'pulp<2.3.1' && \
-    uv pip install snakemake pandas numpy scipy matplotlib flask gunicorn pyyaml multiqc
+    uv pip install snakemake pandas numpy scipy matplotlib flask gunicorn pyyaml multiqc ipykernel
 
 # MAGeCK-VISPR
 RUN git clone --depth 1 https://bitbucket.org/liulab/mageck-vispr.git && \
@@ -47,6 +47,7 @@ RUN git clone --depth 1 https://bitbucket.org/liulab/mageck_nest.git && \
 RUN Rscript -e 'install.packages(c("pak","BiocManager"))'
 RUN Rscript -e 'pak::pkg_install("enrichplot")'
 RUN Rscript -e 'BiocManager::install("MAGeCKFlute")'
+RUN Rscript -e 'pak::pkg_install("IRkernel")'
 #RUN Rscript -e 'BiocManager::install("clusterProfiler")'
 #RUN Rscript -e 'pak::pkg_install(c("sva","edgeR","limma","GOstats","ggplot2"))'
 

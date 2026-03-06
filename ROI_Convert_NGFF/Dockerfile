@@ -29,5 +29,3 @@ RUN . "${VENV_PATH}/bin/activate" && \
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker
-
-ENTRYPOINT ["ROI_Converter_NGFF"]

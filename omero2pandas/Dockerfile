@@ -6,11 +6,6 @@ ENV ICE_VERSION="3.6.5"
 # Ensure POSIX prototypes like readlink are visible during build.
 ENV CFLAGS="-D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700"
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libbz2-dev build-essential libssl-dev libc6-dev && \
-    rm -rf /var/lib/apt/lists/*
-
 RUN pip install --upgrade pip wheel && \
     pip download "zeroc-ice==$ICE_VERSION" && \
     tar -zxf "zeroc-ice-$ICE_VERSION.tar.gz" && \
@@ -22,6 +17,11 @@ FROM python:3.9-slim
 
 ENV PYTHONNOUSERSITE=1
 ENV LANG=C.UTF-8
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libbz2-dev build-essential libssl-dev libc6-dev procps && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

@@ -1,30 +1,30 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
-ENV VIRTUAL_ENV=/env
-ENV PATH=$VIRTUAL_ENV/bin:$VIRTUAL_ENV:$PATH
-ENV NUMBA_CACHE_DIR=/tmp
+ARG CELLVIT_VERSION=1.0.9
+
+SHELL ["/bin/bash", "-c"]
+
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONNOUSERSITE=1
+ENV HDF5_USE_FILE_LOCKING=FALSE
 
-RUN apt-get update && apt-get install -y \
-        procps git wget build-essential \
-        python3 python-is-python3 python3-dev python3-venv
+ENV VENV_PATH="/env"
+ENV PATH="${VENV_PATH}/bin:$PATH"
+ENV UV_PYTHON_INSTALL_DIR="/opt/python"
+COPY --from=ghcr.io/astral-sh/uv:0.9.1 /uv /uvx /bin/
 
-RUN python -m venv $VIRTUAL_ENV && \
-    . $VIRTUAL_ENV/bin/activate && \
-    pip install --upgrade pip wheel setuptools && \
-    pip install shapely zarr tqdm numpy pandas tifffile imagecodecs
+# install libraries
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    procps git wget curl build-essential vim ca-certificates libgeos-dev \
+  && rm -rf /var/lib/apt/lists/*
 
+# install python packages
+RUN uv venv "${VENV_PATH}" --python 3.13 && \
+    uv pip install pip setuptools
 
-RUN apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:openslide/openslide && \
-    apt-get update -y &&  \
-    apt-get install -y python3-openslide
-
-RUN git clone https://github.com/TIO-IKIM/CellViT.git /opt/CellViT
-RUN . $VIRTUAL_ENV/bin/activate && \
-    pip install 'torch==2.4.1+cu121' torchvision --index-url https://download.pytorch.org/whl/cu121 && \
-    pip install -r "/opt/CellViT/requirements.txt" && \
-    pip install cucim-cu12 cupy-cuda12x
+RUN uv pip install torch torchvision cucim-cu12 "cupy-cuda12x<14.0" "numpy<2.0" cutensor-cu12 --torch-backend=cu121 && \
+    uv pip install cellvit=="${CELLVIT_VERSION}" openslide-bin openslide-python 
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

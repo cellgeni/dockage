@@ -30,16 +30,15 @@ RUN uv venv "${VENV_PATH}" --python 3.13
 RUN uv pip install \
     --python "${VENV_PATH}/bin/python" \
     --no-cache-dir \
-    --prerelease=allow \
-    --index-strategy unsafe-best-match \
     --extra-index-url=https://pypi.nvidia.com \
-    "cudf-cu12==25.8.*" "dask-cudf-cu12==25.8.*" "cuml-cu12==25.8.*" \
-    "cugraph-cu12==25.8.*" "nx-cugraph-cu12==25.8.*" "cuxfilter-cu12==25.8.*" \
-    "cucim-cu12==25.8.*" "pylibraft-cu12==25.8.*" "raft-dask-cu12==25.8.*" \
-    "cuvs-cu12==25.8.*" cupy-cuda12x
+    "cudf-cu12==26.2.*" "dask-cudf-cu12==26.2.*" "cuml-cu12==26.2.*" \
+    "cugraph-cu12==26.2.*" "nx-cugraph-cu12==26.2.*" "cuxfilter-cu12==26.2.*" \
+    "cucim-cu12==26.2.*" "pylibraft-cu12==26.2.*" "raft-dask-cu12==26.2.*" \
+    "cuvs-cu12==26.2.*" "nx-cugraph-cu12==26.2.*" cupy-cuda12x
 
 # Install core rapids-singlecell and other useful packages
-RUN uv pip install rapids-singlecell==0.14.1 anndata==0.12.9 scanpy==1.12.0 jupyterlab notebook tqdm ipywidgets papermill ipykernel gdown \
+RUN uv pip install rapids-singlecell==0.14.1 anndata==0.12.9 scanpy==1.12.0 igraph>=0.10.8 leidenalg>=0.10.1 \
+    jupyterlab notebook tqdm ipywidgets papermill ipykernel gdown \
     --no-cache-dir \
     --python "${VENV_PATH}/bin/python"
 

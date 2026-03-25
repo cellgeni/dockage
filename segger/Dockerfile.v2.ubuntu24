@@ -1,0 +1,56 @@
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    VENV_PATH=/env
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    git \
+    python3.12 \
+    python3.12-venv \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3.12 -m venv ${VENV_PATH} \
+    && . ${VENV_PATH}/bin/activate \
+    && pip install --no-cache-dir --upgrade pip wheel setuptools \
+    && pip install --no-cache-dir torch==2.5.0 torchvision==0.20.0 --index-url https://download.pytorch.org/whl/cu121 \
+    && pip install --no-cache-dir torch_scatter -f https://data.pyg.org/whl/torch-2.5.0+cu121.html \
+    && pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com cuspatial-cu12 cudf-cu12 cuml-cu12 cugraph-cu12 \
+    && pip install --no-cache-dir cupy-cuda12x \
+    && pip install --no-cache-dir litlogger
+
+RUN git clone --depth 1 --branch v2-incremental --single-branch https://github.com/dpeerlab/segger.git /tmp/segger \
+    && . ${VENV_PATH}/bin/activate \
+    && pip install --no-cache-dir /tmp/segger
+
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    HOME=/tmp \
+    VENV_PATH=/env \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    CUPY_CACHE_DIR=/tmp/cupy_cache \
+    SEGGER_NUM_WORKERS=0 \
+    PATH=/env/bin:$PATH
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    locales \
+    python3.12 \
+    python-is-python3 \
+    libxcb1 \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libsm6 \
+    libglib2.0-0 \
+    libgl1 \
+    && locale-gen en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /env /env
+
+WORKDIR /workspace
+COPY Dockerfile /docker/Dockerfile
+RUN chmod -R 755 /docker

@@ -22,7 +22,7 @@ RUN python3.12 -m venv ${VENV_PATH} \
 
 RUN git clone --depth 1 --branch v2-incremental --single-branch https://github.com/dpeerlab/segger.git /tmp/segger \
     && . ${VENV_PATH}/bin/activate \
-    && pip install --no-cache-dir /tmp/segger
+    && pip install --no-cache-dir /tmp/segger[all,spatialdata]
 
 FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
 

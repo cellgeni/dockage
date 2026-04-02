@@ -14,7 +14,7 @@ ENV VENV_PATH=/opt \
     PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-17-jre-headless ca-certificates procps && \
+    openjdk-17-jre-headless ca-certificates procps git && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/m2/repository /opt/.jgo && \
@@ -23,4 +23,4 @@ RUN mkdir -p /opt/m2/repository /opt/.jgo && \
 RUN python -m venv "$VENV_PATH" && \
     "$VENV_PATH/bin/pip" install -U pip wheel setuptools uv && \
     "$VENV_PATH/bin/uv" pip install --python "$VENV_PATH/bin/python" \
-    ImageTileProcessor==0.1.16 pyarrow==19.0.1 bioformats_jar==2020.5.27 bioio bioio-bioformats
+    "ImageTileProcessor @ git+https://github.com/BioinfoTongLI/ImageTileProcessor.git" pyarrow==19.0.1 bioformats_jar==2020.5.27 bioio bioio-bioformats

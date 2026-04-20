@@ -11,7 +11,7 @@ RUN uv venv "${VENV_PATH}"
 # install system dependencies required by geopandas/rasterio
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgdal-dev \
-    libspatialindex-dev \
+    libspatialindex-dev procps \
     && rm -rf /var/lib/apt/lists/*
 
 # install SegTraQ and jupyterlab/papermill for notebook support
@@ -22,5 +22,3 @@ RUN . "${VENV_PATH}/bin/activate" && \
 # Copy Dockerfile to the container
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker
-
-ENTRYPOINT ["/env/bin/python"]

@@ -1,14 +1,30 @@
-FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04 AS builder
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    VENV_PATH=/env
+    HOME=/tmp \
+    VENV_PATH=/env \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    CUPY_CACHE_DIR=/tmp/cupy_cache \
+    SEGGER_NUM_WORKERS=0 \
+    PATH=/env/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     git \
+    locales \
     python3.12 \
     python3.12-venv \
     python3-pip \
+    python-is-python3 \
+    libxcb1 \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libsm6 \
+    libglib2.0-0 \
+    libgl1 \
+    && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3.12 -m venv ${VENV_PATH} \
@@ -22,35 +38,10 @@ RUN python3.12 -m venv ${VENV_PATH} \
 
 RUN git clone --depth 1 --branch v2-incremental --single-branch https://github.com/dpeerlab/segger.git /tmp/segger \
     && . ${VENV_PATH}/bin/activate \
-    && pip install --no-cache-dir /tmp/segger[all,spatialdata]
-
-FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    HOME=/tmp \
-    VENV_PATH=/env \
-    LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
-    CUPY_CACHE_DIR=/tmp/cupy_cache \
-    SEGGER_NUM_WORKERS=0 \
-    PATH=/env/bin:$PATH
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    locales \
-    python3.12 \
-    python-is-python3 \
-    libxcb1 \
-    libx11-6 \
-    libxext6 \
-    libxrender1 \
-    libsm6 \
-    libglib2.0-0 \
-    libgl1 \
-    && locale-gen en_US.UTF-8 \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=builder /env /env
+    && pip install --no-cache-dir /tmp/segger[spatialdata] \
+    && rm -rf /tmp/segger
 
 WORKDIR /workspace
 COPY Dockerfile /docker/Dockerfile
 RUN chmod -R 755 /docker
+ENTRYPOINT ["/bin/bash", "-lc", "source /env/bin/activate && exec bash"]

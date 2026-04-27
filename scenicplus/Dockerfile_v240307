@@ -1,0 +1,123 @@
+FROM python:3.11-bookworm
+
+LABEL description="SCENIC+ eGRN inference pipeline (pycisTopic + pycistarget + scenicplus)"
+LABEL org.opencontainers.image.source="https://github.com/aertslab/scenicplus"
+
+# ── System dependencies ───────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Compilers and headers (macs2, pysam, pybigwig, pyranges all need these)
+    build-essential \
+    python3.11-dev \
+    # HTS / BAM / CRAM libraries (pysam)
+    libbz2-dev \
+    liblzma-dev \
+    zlib1g-dev \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libdeflate-dev \
+    # HDF5 (h5py, anndata)
+    libhdf5-dev \
+    pkg-config \
+    # Genomics command-line tools
+    bedtools \
+    tabix \
+    # Git (pip git+https:// installs for loomxpy, pyscenic)
+    git \
+    # Useful in running processes
+    procps \
+    curl \
+    wget \
+    # Java (required to run Mallet)
+    default-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Mallet (Java LDA topic modeling) ─────────────────────────────────────
+COPY mallet-2.1.0 /opt/mallet
+RUN chmod +x /opt/mallet/bin/mallet
+
+ENV PATH="/opt/mallet/bin:${PATH}"
+
+# ── Rust toolchain ────────────────────────────────────────────────────────
+# Required for scatac-fragment-tools and pybigtools (Rust-compiled Python packages).
+# Skip this block if pre-built wheels are available for your platform.
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --default-toolchain stable --profile minimal
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# ── Python dependencies ───────────────────────────────────────────────────
+# Install from the pinned requirements.txt that ships with the scenicplus package.
+# We exclude:
+#   snakemake* — not needed inside the container (Nextflow handles orchestration)
+#   conda-inject — snakemake dep, not available on PyPI standalone
+COPY scenicplus/requirements.txt /tmp/requirements.txt
+
+RUN grep -v -E "^(snakemake|conda-inject)" /tmp/requirements.txt \
+    | pip install --no-cache-dir -r /dev/stdin
+
+# Python 3.11's inspect.signature raises TypeError on certain pandas 1.5
+# property objects.  dask.dataframe triggers this at class-definition time via
+# _bind_property → derived_from → get_named_args → inspect.signature.
+# Patch dask.utils.get_named_args to catch TypeError and return [] so the
+# offending accessor attributes are silently skipped.
+RUN python3 - <<'PYEOF'
+import pathlib, sys
+import dask.utils as du
+
+p = pathlib.Path(du.__file__)
+lines = p.read_text().splitlines(keepends=True)
+
+patched = False
+for i, line in enumerate(lines):
+    if line.strip() == "s = inspect.signature(func)":
+        ws = line[: len(line) - len(line.lstrip())]
+        lines[i] = (
+            f"{ws}try:\n"
+            f"{ws}    s = inspect.signature(func)\n"
+            f"{ws}except TypeError:\n"
+            f"{ws}    return []\n"
+        )
+        patched = True
+        p.write_text("".join(lines))
+        for pyc in p.parent.joinpath("__pycache__").glob("utils.cpython-*.pyc"):
+            pyc.unlink()
+        print(f"Patched {p} at line {i + 1}")
+        break
+
+if not patched:
+    idx = "".join(lines).find("def get_named_args")
+    print("get_named_args content:\n" + "".join(lines)[idx : idx + 400])
+    sys.exit(1)
+PYEOF
+
+# ── Local package installation ────────────────────────────────────────────
+# Copy source trees and install, overriding any git-pulled versions from
+# the requirements.txt above (pycistarget, pycistopic were installed from
+# GitHub; we replace them with the local development versions).
+COPY pycisTopic   /opt/pycisTopic
+COPY pycistarget  /opt/pycistarget
+COPY scenicplus   /opt/scenicplus
+
+RUN pip install --no-cache-dir --no-deps --force-reinstall \
+    /opt/pycisTopic \
+    /opt/pycistarget \
+    /opt/scenicplus
+
+RUN pip install --no-cache-dir --no-deps jupyterlab papermill
+
+# ── Smoke tests ───────────────────────────────────────────────────────────
+RUN pycistopic --help  > /dev/null 2>&1 && \
+    scenicplus --help  > /dev/null 2>&1 && \
+    pycistarget --help > /dev/null 2>&1 && \
+    python - <<'EOF'
+import pycisTopic, pycistarget, scenicplus
+from scenicplus.TF_to_gene import calculate_TFs_to_genes_relationships
+print(f"pycisTopic  {pycisTopic.__version__}")
+print(f"pycistarget {pycistarget.__version__}")
+print(f"scenicplus  {scenicplus.__version__}")
+EOF
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker
+
+WORKDIR /data
+

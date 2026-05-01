@@ -20,11 +20,12 @@ RUN apt-get update && \
   && rm -rf /var/lib/apt/lists/*
 
 # install python packages
-RUN uv venv "${VENV_PATH}" --python 3.13 && \
+RUN uv venv "${VENV_PATH}" --python 3.12 && \
     uv pip install pip setuptools
 
-RUN uv pip install torch torchvision cucim-cu12 "cupy-cuda12x<14.0" "numpy<2.0" cutensor-cu12 --torch-backend=cu121 && \
-    uv pip install cellvit=="${CELLVIT_VERSION}" openslide-bin openslide-python 
+# do not install cucim-cu12 because it can't read NDPI, only keep openslide 
+RUN uv pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 "cupy-cuda12x<14.0" "numpy<2.0" cutensor-cu12 --torch-backend=cu121 && \
+    uv pip install cellvit=="${CELLVIT_VERSION}" "ray[default]<2.49" openslide-bin openslide-python 
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

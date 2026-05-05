@@ -16,15 +16,23 @@ ENV TORCH_HOME=/opt/torch/
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV SCYJAVA_DISABLE_JGO=1
 ENV SCYJAVA_CLASSPATH=${WKDIR}/valis/bioformats_package.jar
+ENV SCYJAVA_JAVA_HOME=${JAVA_HOME}
+ENV CJDK_DISABLE_DOWNLOAD=1
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.14 /uv /uvx /bin/
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV UV_PYTHON=3.11
+ENV VIRTUAL_ENV=/env
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN uv python install ${UV_PYTHON}
 
 # Get build dependencies
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
 	build-essential software-properties-common \
 	ninja-build python3-dev bc wget ca-certificates \
-	git-all cmake libjxr-dev openjdk-11-jre procps \
+	git-all cmake libjxr-dev openjdk-11-jdk procps \
         libglib2.0-dev \
         glib-2.0-dev \
         libexpat1-dev \
@@ -42,13 +50,14 @@ RUN apt-get update && apt-get install -y \
         liborc-dev \
         libgirepository1.0-dev \
         libopenslide-dev \
-        librsvg2-dev
+        openslide-tools \
+        libtiff-tools
 
 RUN update-ca-certificates && \
-    uv venv /env
+    uv venv --python "${UV_PYTHON}" "${VIRTUAL_ENV}"
 
 # libvips dependencies for libvips build
-RUN . /env/bin/activate && \
+RUN . "${VIRTUAL_ENV}/bin/activate" && \
     uv pip install meson
 
 ### Install libvips from source to get latest version
@@ -77,8 +86,11 @@ RUN git clone --depth 1 --branch v1.2.0 https://github.com/MathOnco/valis.git /t
     rm -rf /tmp/src
     
 # RUN uv sync
-RUN . /env/bin/activate && \
-    uv pip install .
+RUN . "${VIRTUAL_ENV}/bin/activate" && \
+    uv pip install . && \
+    uv pip install "numpy<2" zarr imagecodecs jupyterlab papermill ipykernel openslide-bin openslide-python "scikit-image<=0.21.0"
+
+RUN update-alternatives --set java "${JAVA_HOME}/bin/java"
 
 # Install bioformats.jar in valis
 RUN wget https://downloads.openmicroscopy.org/bio-formats/${BF_VERSION}/artifacts/bioformats_package.jar -P valis
@@ -93,7 +105,7 @@ RUN apt-get remove -y wget build-essential ninja-build && \
   apt-get autoremove -y && \
   apt-get autoclean && \
   apt-get clean && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
   rm -rf /usr/local/lib/python*
 
 

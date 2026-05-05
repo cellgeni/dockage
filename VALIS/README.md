@@ -5,7 +5,7 @@
 |**Name** | VALIS |
 | **Description** | Virtual Alignment of pathoLogy Image Series | 
 | **URL/repo** | https://github.com/MathOnco/valis |
-| **URL/container** |  |
+| **URL/container** | https://quay.io/cellgeni/valis:1.2.0 |
 | **Version(s)** | `1.2.0` |
 
 

@@ -1,4 +1,4 @@
 # cellpose==3.0.10
 cellpose==4.1.1
 bioformats_jar==2020.5.27
-tifffile==2022.4.8
+tifffile

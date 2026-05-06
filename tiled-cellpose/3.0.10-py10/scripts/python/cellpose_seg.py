@@ -5,6 +5,7 @@
 """
 This script will slice the image in XY dimension and save the slices coordinates in json files
 """
+
 import fire
 from aicsimageio import AICSImage
 import os
@@ -19,23 +20,26 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-VERSION="0.1.1"
+VERSION = "0.1.1"
 
 
 def main(
-    image:str,
-    x_min:int, x_max:int, y_min:int, y_max:int,
-    out_dir:str,
-    cell_diameter:int=30,
-    cellpose_model:str="cyto3",
-    zs:list=[0],
-    channels:list=[0, 0],
-    resolution_level:int=0,
-    **cp_params
-    ):
+    image: str,
+    x_min: int,
+    x_max: int,
+    y_min: int,
+    y_max: int,
+    out_dir: str,
+    cell_diameter: int = 30,
+    cellpose_model: str = "cyto3",
+    zs: list = [0],
+    channels: list = [0, 0],
+    resolution_level: int = 0,
+    **cp_params,
+):
 
     logging.info(f"Loading Cellpose model: {cellpose_model} (GPU: {core.use_gpu()})")
-    model = models.Cellpose(gpu=core.use_gpu(), model_type=cellpose_model)
+    model = models.CellposeModel(gpu=core.use_gpu(), model_type=cellpose_model)
     # model = denoise.CellposeDenoiseModel(
     #     gpu=core.use_gpu(),
     #     model_type=cellpose_model,
@@ -54,9 +58,10 @@ def main(
         ch_ind = channels[0] if len(np.unique(channels)) == 1 else channels
         lazy_one_plane = img.get_image_dask_data(
             "ZCYX",
-            T=0, # only one time point is allowed for now
+            T=0,  # only one time point is allowed for now
             C=ch_ind,
-            Z=zs)
+            Z=zs,
+        )
         crop = lazy_one_plane[:, :, y_min:y_max, x_min:x_max].compute()
 
     masks, flows, _, _ = model.eval(
@@ -91,7 +96,7 @@ def main(
     outline_file = glob(f"{out_dir}/*_cp_outlines.txt")
 
     if len(outline_file) > 0:
-    # if os.path.exists(outlines_file):
+        # if os.path.exists(outlines_file):
         wkts = []
         with open(outline_file[0], "rt") as f:
             for line in f.readlines():

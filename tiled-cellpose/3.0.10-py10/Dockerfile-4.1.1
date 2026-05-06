@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends git && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && \
+RUN pip install --no-cache-dir torch==2.4.1+cu124 torchvision==0.19.1+cu124 --index-url https://download.pytorch.org/whl/cu124 && \
+    pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir git+https://github.com/BioinfoTongLI/ImageTileProcessor.git@main
 
 COPY scripts/python /scripts/

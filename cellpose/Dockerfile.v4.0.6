@@ -1,8 +1,10 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:13.0.3-cudnn-runtime-ubuntu22.04
 
 ENV VIRTUAL_ENV=/env
 ENV PATH=$VIRTUAL_ENV/bin:$VIRTUAL_ENV:$PATH
 ENV NUMBA_CACHE_DIR=/tmp
+ENV CELLPOSE_LOCAL_MODELS_PATH=/opt/cellpose/models
+ENV CELLPOSE_MODEL=cpsam
 
 RUN apt-get update && apt-get install -y \
         procps git wget build-essential \
@@ -11,12 +13,21 @@ RUN apt-get update && apt-get install -y \
 RUN python -m venv $VIRTUAL_ENV && \
     . $VIRTUAL_ENV/bin/activate && \
     pip install --upgrade pip wheel setuptools && \
+    printf '%s\n' \
+        "import os" \
+        "os.environ.setdefault('CELLPOSE_LOCAL_MODELS_PATH', '/opt/cellpose/models')" \
+        > $VIRTUAL_ENV/lib/python3.10/site-packages/sitecustomize.py && \
     pip install shapely zarr tqdm numpy pandas tifffile imagecodecs fire aicsimageio readlif>=0.6.4 bioformats_jar
 
 ENV CELLPOSE_VERSION=4.0.6
 RUN . $VIRTUAL_ENV/bin/activate && \
-    pip install 'torch==2.4.1+cu121' torchvision --index-url https://download.pytorch.org/whl/cu121 && \
-    pip install cellpose==$CELLPOSE_VERSION 
+    pip install 'torch==2.8.0+cu128' 'torchvision==0.23.0+cu128' --index-url https://download.pytorch.org/whl/cu128 && \
+    pip install cellpose==$CELLPOSE_VERSION imagetileprocessor && \
+    sed -i 's#_MODEL_DIR_DEFAULT = Path.home().joinpath(".cellpose", "models")#_MODEL_DIR_DEFAULT = Path("/opt/cellpose/models")#' \
+        $VIRTUAL_ENV/lib/python3.10/site-packages/cellpose/models.py
+
+RUN . $VIRTUAL_ENV/bin/activate && \
+    python -c "import os; from cellpose import core, io, models; cellpose_model = os.environ.get('CELLPOSE_MODEL', 'cpsam'); model = models.CellposeModel(gpu=core.use_gpu(), model_type=cellpose_model)"
 
 COPY Dockerfile /docker/
-RUN chmod -R 755 /docker
+RUN chmod -R 755 /docker $CELLPOSE_LOCAL_MODELS_PATH

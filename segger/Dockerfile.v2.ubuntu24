@@ -44,4 +44,4 @@ RUN git clone --depth 1 --branch v2-incremental --single-branch https://github.c
 WORKDIR /workspace
 COPY Dockerfile /docker/Dockerfile
 RUN chmod -R 755 /docker
-ENTRYPOINT ["/bin/bash", "-lc", "source /env/bin/activate && exec bash"]
+# ENTRYPOINT ["/bin/bash", "-lc", "source /env/bin/activate && exec bash"]

@@ -1,16 +1,22 @@
-FROM python:3.10
+FROM ubuntu:22.04
 
 # Configure the environment
 ENV DEBIAN_FRONTEND=noninteractive
-ENV VENV_PATH="/env"
-ENV PATH="${VENV_PATH}/bin:$PATH"
+ENV VIRTUAL_ENV="/env"
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV UV_PYTHON=3.10
+ENV VIRTUAL_ENV=/env
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN uv python install ${UV_PYTHON} && \
+    uv venv --python "${UV_PYTHON}" "${VIRTUAL_ENV}"
 
 # Install the required Python packages
-RUN python -m venv "${VENV_PATH}" && \
-    . "${VENV_PATH}/bin/activate" && \
-    pip install -U pip setuptools wheel && \
-    pip install palom tiledb zarr pyarrow pandas fire && \
-    pip install jupyterlab papermill
+RUN uv pip install pip setuptools wheel && \
+    uv pip install 'palom[all]' 'numpy<2' openslide-python openslide-bin tifffile imagecodecs numcodecs tiledb zarr pyarrow pandas fire && \
+    uv pip install jupyterlab papermill
 
 # Copy Dockerfile to the image
 COPY Dockerfile /docker/

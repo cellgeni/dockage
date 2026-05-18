@@ -1,23 +1,29 @@
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
-ENV VIRTUAL_ENV=/env
-ENV PATH=$VIRTUAL_ENV/bin:$VIRTUAL_ENV:$PATH
+ARG STARDIST_VERSION=0.9.2
+
+# Configure the environment
+ENV DEBIAN_FRONTEND=noninteractive
 ENV NUMBA_CACHE_DIR=/tmp
+ENV VIRTUAL_ENV="/env"
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV UV_PYTHON=3.11
 
 RUN apt-get update && apt-get install -y \
-        procps git wget build-essential \
-        python3 python-is-python3 python3-dev python3-venv
+        vim procps git wget build-essential
 
-RUN python -m venv $VIRTUAL_ENV && \
-    . $VIRTUAL_ENV/bin/activate && \
-    pip install --upgrade pip wheel setuptools && \
-    pip install shapely zarr tqdm numpy pandas tifffile imagecodecs
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN uv python install "${UV_PYTHON}" && \
+    uv venv --python "${UV_PYTHON}" "${VIRTUAL_ENV}"
 
+# Install the required Python packages
+RUN uv pip install pip setuptools wheel && \
+    uv pip install 'tensorflow[and-cuda]==2.15.*' && \
+    uv pip install stardist=="${STARDIST_VERSION}" csbdeep gputools edt && \
+    uv pip install shapely zarr tqdm 'numpy<2' pandas tifffile imagecodecs openslide-python openslide-bin numcodecs pyarrow fire dask scikit-image && \
+    uv pip install jupyterlab papermill
 
-RUN . $VIRTUAL_ENV/bin/activate && \
-    pip install 'tensorflow[and-cuda]==2.11.0' && \
-    pip install stardist csbdeep gputools edt
-
+# Copy Dockerfile to the image
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker
-

@@ -19,7 +19,7 @@ RUN cargo install --path /proseg_bins/ \
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates procps && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /proseg_bins/ /usr/local/bin/
-CMD ["proseg"]
+# CMD ["proseg"]
 
 # Copy Dockerfile to the image
 COPY Dockerfile /docker/

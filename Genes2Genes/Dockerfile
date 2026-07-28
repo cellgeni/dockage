@@ -1,0 +1,26 @@
+FROM ubuntu:22.04
+
+# Configure the environment
+ENV DEBIAN_FRONTEND=noninteractive
+ENV VIRTUAL_ENV="/env"
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV UV_PYTHON=3.10
+ENV VIRTUAL_ENV=/env
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN uv python install ${UV_PYTHON} && \
+    uv venv --python "${UV_PYTHON}" "${VIRTUAL_ENV}"
+
+RUN apt update && apt install --no-install-recommends --yes curl ca-certificates git bzip2 procps unzip gawk build-essential vim
+
+# Install the required Python packages
+RUN uv pip install pip setuptools && \
+    uv pip install genes2genes "dask[array]" --torch-backend=cu128 && \
+    uv pip install jupyterlab papermill
+
+# Copy Dockerfile to the image
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker
+

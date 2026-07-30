@@ -35,9 +35,9 @@ RUN uv pip install --system --no-cache-dir \
     fire \
     ome-zarr \
     ome-types \
-    aicsimageio \
+    "aicsimageio==4.14.0" \
     scipy \
-    scikit-image \
+    "scikit-image<=0.21.0" \
     cupy-cuda12x
 
 RUN uv pip install --system --no-cache-dir \

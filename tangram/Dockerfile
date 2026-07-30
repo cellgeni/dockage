@@ -12,6 +12,7 @@ ENV VIRTUAL_ENV="${VENV_PATH}"
 ENV PATH="${VENV_PATH}/bin:${PATH}"
 ENV PYTHONNOUSERSITE=true
 ENV UV_PYTHON_PREFERENCE=only-system
+ENV NUMBA_CACHE_DIR=/tmp
 
 # ---- System dependencies ----
 RUN apt-get update && apt-get install -y --no-install-recommends \

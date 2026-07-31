@@ -6,5 +6,11 @@ ENV PIP_NO_CACHE_DIR=1 \
 
 WORKDIR /app
 
-RUN pip install --upgrade pip && \
-    pip install "pandas==2.3.3" "trackpy==0.7"
+RUN python -m pip install --upgrade pip setuptools wheel \
+    && python -m pip install \
+        "pandas==2.3.3" \
+        "trackpy==0.7" \
+        fire
+
+COPY Dockerfile /docker/
+RUN chmod -R 755 /docker

@@ -24,3 +24,4 @@ vendor/pkg/
 pyenv
 Vagrantfile
 *.sif
+.claude*

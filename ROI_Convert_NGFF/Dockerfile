@@ -3,6 +3,7 @@ FROM python:3.10-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV VENV_PATH=/env
 ENV PATH="${VENV_PATH}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
 ENV PIP_NO_CACHE_DIR=1
 ENV CFLAGS="-D_DEFAULT_SOURCE"
 ENV CPPFLAGS="-D_DEFAULT_SOURCE"
@@ -12,10 +13,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     build-essential \
     libgeos-dev \
+    libgeos-c1v5 \
     libbz2-dev \
     libssl-dev \
     libexpat1 \
     && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /env/lib && \
+    ln -sf /lib/x86_64-linux-gnu/libgeos_c.so /env/lib/libgeos_c.so
 
 RUN python -m venv "${VENV_PATH}" && \
     . "${VENV_PATH}/bin/activate" && \
@@ -29,3 +34,4 @@ RUN . "${VENV_PATH}/bin/activate" && \
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker
+

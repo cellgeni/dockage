@@ -19,7 +19,7 @@ RUN python -m venv /env && \
     pip install -U pip wheel "setuptools<81"
 
 RUN pip install --no-cache-dir torch==2.6.0 --extra-index-url https://download.pytorch.org/whl/cu124
-RUN pip install --no-cache-dir "terra-st==0.1.13" papermill jupyterlab
+RUN pip install --no-cache-dir "terra-st[hub]==0.1.13" papermill jupyterlab
 
-COPY terra_model /opt/terra_model
+RUN python -c "from terra import download_pretrained; download_pretrained('Lotfollahi-lab/TERRA-112M', local_dir='/opt/terra_model')"
 COPY Dockerfile /docker/

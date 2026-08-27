@@ -35,6 +35,7 @@ RUN uv pip install --no-cache \
         "scikit-learn>=1.0.0" \
         "scipy>=1.7.0" \
         "squidpy>=1.5.0" \
+        "scikit-misc>=0.3.1" \
         pandas \
         natsort
 

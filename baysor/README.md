@@ -6,7 +6,7 @@
 | **Description** | This container is mainly for running Bayesian Segmentation of Spatial Transcriptomics Data using the tool `baysor` |
 | **URL/repo** | https://github.com/kharchenkolab/Baysor |
 | **URL/container** | [https://quay.io/repository/cellgeni/baysor](https://quay.io/repository/baysor/
-| **Version(s)** | 0.6.2, 0.7.1, 0.8.2 |
+| **Version(s)** | 0.6.2, 0.7.1, 0.8.2, 0.9.0 |
 
 
 # Singularity considerations for version 0.6.2

@@ -1,17 +1,14 @@
 FROM ubuntu:22.04
 
-ARG BF2RAW_VERSION="0.11.0"
-ARG RAW2OME_VERSION="0.8.0"
+ARG BF2RAW_VERSION="0.12.1"
+ARG RAW2OME_VERSION="0.10.1"
 ARG BFTOOLS_VERSION="8.3.0"
 
 SHELL ["/bin/bash", "-c"]
 
-# set envs
-ENV DEBIAN_FRONTEND=noninteractive
-
 # install base OS packages
 RUN apt-get update && \
-     apt-get install -y --no-install-recommends \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       git wget unzip procps binutils libblosc-dev libjpeg-turbo8-dev openjdk-18-jre-headless
 ENV JAVA_HOME="/usr/lib/jvm/java-18-openjdk-amd64"
 
@@ -39,5 +36,3 @@ RUN wget -q "https://downloads.openmicroscopy.org/bio-formats/${BFTOOLS_VERSION}
 ENV PATH="/opt/bftools:${PATH}"
 
 COPY Dockerfile /docker/
-RUN chmod -R 755 /docker
-

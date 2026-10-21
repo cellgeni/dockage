@@ -7,7 +7,7 @@
 | **URL/repo** | https://github.com/BioinfoTongLI/phenix-icechunk |
 | **URL/pypi** | https://pypi.org/project/phenix-icechunk/ |
 | **URL/container** | https://quay.io/repository/cellgeni/phenix-icechunk |
-| **Version(s)** | `0.2.0` |
+| **Version(s)** | `0.3.0` |
 
 ## Notes
 
@@ -20,9 +20,9 @@
 ## Usage
 
 ```bash
-docker build -t phenix-icechunk:0.2.0 .
+docker build -t phenix-icechunk:0.3.0 .
 
-docker run --rm -v /path/to/export:/path/to/export -v $PWD/data:/data phenix-icechunk:0.2.0 \
+docker run --rm -v /path/to/export:/path/to/export -v $PWD/data:/data phenix-icechunk:0.3.0 \
     phenix-icechunk "/path/to/export/Measurement 2/Images/Index.xml" /data/plate.icechunk \
     --flatfield --zproject --ome-tiff /data/ome_tiff
 ```

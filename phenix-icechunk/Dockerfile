@@ -16,7 +16,7 @@ WORKDIR /opt
 
 RUN python -m pip install --upgrade pip setuptools wheel \
     && python -m pip install \
-        "phenix-icechunk[extras]==0.2.0" \
+        "phenix-icechunk[extras]==0.3.0" \
         jupyterlab \
         ipykernel \
         papermill

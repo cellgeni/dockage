@@ -8,11 +8,13 @@
 | **URL/pypi** | https://pypi.org/project/multiview-stitcher/ |
 | **URL/docs** | https://multiview-stitcher.github.io/multiview-stitcher/ |
 | **URL/container** | https://quay.io/repository/cellgeni/multiview-stitcher |
-| **Version(s)** | `0.1.62` |
+| **Version(s)** | `0.1.62` (+ `icechunk==2.3.0`) |
 
 ## Notes
 
-* Python 3.12 - upstream requires `>=3.11`.
+* Python 3.12 - upstream requires `>=3.11`; `icechunk` requires `>=3.12`.
+* [`icechunk`](https://pypi.org/project/icechunk/) `2.3.0` is included for reading/writing
+  transactional Zarr v3 stores (e.g. plates produced by `phenix-icechunk`).
 * Installed with the `[ants,itk-elastix,czi,imaris,distributed]` extras: ANTsPy and ITK-elastix
   registration backends, CZI and Imaris readers, and `distributed` / `dask-jobqueue` / `bokeh`
   for running on a Dask cluster.

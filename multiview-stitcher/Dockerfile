@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # multiview-stitcher - registration and fusion of large imaging datasets in 2D and 3D
 # https://github.com/multiview-stitcher/multiview-stitcher
-# Requires Python >=3.11.
+# Requires Python >=3.11 (icechunk requires >=3.12).
 FROM python:3.12-slim
 
 ENV PIP_NO_CACHE_DIR=1 \
@@ -17,6 +17,7 @@ WORKDIR /opt
 RUN python -m pip install --upgrade pip setuptools wheel \
     && python -m pip install \
         "multiview-stitcher[ants,itk-elastix,czi,imaris,distributed]==0.1.62" \
+        "icechunk==2.3.0" \
         jupyterlab \
         ipykernel \
         papermill

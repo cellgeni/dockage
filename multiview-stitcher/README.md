@@ -8,13 +8,16 @@
 | **URL/pypi** | https://pypi.org/project/multiview-stitcher/ |
 | **URL/docs** | https://multiview-stitcher.github.io/multiview-stitcher/ |
 | **URL/container** | https://quay.io/repository/cellgeni/multiview-stitcher |
-| **Version(s)** | `0.1.62` (+ `icechunk==2.3.0`) |
+| **Version(s)** | `0.1.62` (+ `icechunk==2.3.0`, `phenix-icechunk==0.3.1`) |
 
 ## Notes
 
-* Python 3.12 - upstream requires `>=3.11`; `icechunk` requires `>=3.12`.
+* Python 3.12 - upstream requires `>=3.11`; `icechunk` and `phenix-icechunk` require `>=3.12`.
 * [`icechunk`](https://pypi.org/project/icechunk/) `2.3.0` is included for reading/writing
-  transactional Zarr v3 stores (e.g. plates produced by `phenix-icechunk`).
+  transactional Zarr v3 stores.
+* [`phenix-icechunk[extras]`](https://pypi.org/project/phenix-icechunk/) `0.3.1` is included to expose
+  Opera Phenix / Harmony `Index.xml` exports as virtual OME-Zarr plates that can be stitched directly.
+  Chunks reference the original TIFFs via `file://` URLs, so bind-mount the export at the **same path**.
 * Installed with the `[ants,itk-elastix,czi,imaris,distributed]` extras: ANTsPy and ITK-elastix
   registration backends, CZI and Imaris readers, and `distributed` / `dask-jobqueue` / `bokeh`
   for running on a Dask cluster.

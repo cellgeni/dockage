@@ -33,6 +33,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # their own CUDA runtime); those wheels only exist up to Python 3.9.
 RUN uv venv ${VENV_PATH} --python 3.9
 
+# setuptools>=81 dropped pkg_resources (and the distutils shim), which older deps still
+# import at build and run time; keep it below 81 for every uv install in this image.
+RUN echo "setuptools<81" > /etc/uv-constraints.txt
+ENV UV_CONSTRAINT=/etc/uv-constraints.txt
+ENV UV_BUILD_CONSTRAINT=/etc/uv-constraints.txt
+RUN uv pip install --no-cache "setuptools<81"
+
 RUN git clone https://github.com/ekvall93/ELD.git /opt/ELD && \
     cd /opt/ELD && \
     git checkout "${ELD_COMMIT}"
@@ -50,7 +57,8 @@ RUN uv pip install --no-cache \
       --find-links https://download.pytorch.org/whl/torch_stable.html \
       --index-strategy unsafe-best-match
 
-RUN python -c "import torch, kornia, ELD.model; print('torch', torch.__version__)" && \
+# (ELD.model and ELD.utils import each other; ELD.train imports utils first, as eld-train does)
+RUN python -c "import torch, kornia, ELD.train; print('torch', torch.__version__)" && \
     chmod -R a+rX /opt/ELD
 
 COPY Dockerfile /docker/

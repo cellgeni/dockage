@@ -35,6 +35,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN uv venv ${VENV_PATH} --python python3.10
 
+# setuptools>=81 dropped pkg_resources (and the distutils shim), which older deps still
+# import at build and run time; keep it below 81 for every uv install in this image.
+RUN echo "setuptools<81" > /etc/uv-constraints.txt
+ENV UV_CONSTRAINT=/etc/uv-constraints.txt
+ENV UV_BUILD_CONSTRAINT=/etc/uv-constraints.txt
+RUN uv pip install --no-cache "setuptools<81"
+
 # Pins follow upstream torch.Dockerfile (torch 2.3.1) and environment.yml
 # (ConfigSpace 0.6.0 for smac 1.4.0, zarr 2.x, numpy 1.x).
 # slideflow-gpl / slideflow-noncommercial add extra pretrained models (UNI, CTransPath, CLAM, ...);

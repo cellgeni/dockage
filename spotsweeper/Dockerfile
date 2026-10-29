@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y -qq --no-install-recommends \
         libglpk-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libicu-dev \
         libudunits2-dev libgdal-dev gdal-bin libgeos-dev libproj-dev libsqlite3-dev \
         libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev libcairo2-dev \
-        libmagick++-dev procps git python3-venv python3-dev \
+        libmagick++-dev procps git python3-venv python3-dev libzmq3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Jupyter stack in a venv (for IRkernel / papermill)

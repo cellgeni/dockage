@@ -35,7 +35,9 @@ RUN git clone https://github.com/regeneron-mpds/stacker.git /opt/stacker && \
 
 # Installed into the image's system python so the NGC TensorFlow build stays in use.
 # docker-requirements.txt pins jupyterlab==2.3.2; papermill added per house rules.
-RUN pip install pip==23.3.1 && \
+# antspyx==0.3.8 is no longer on PyPI; 0.4.2 is the oldest release left (has cp38 wheels).
+RUN sed -i 's/^antspyx==0.3.8$/antspyx==0.4.2/' /opt/stacker/docker-requirements.txt && \
+    pip install pip==23.3.1 && \
     pip install -r /opt/stacker/docker-requirements.txt && \
     pip install papermill ipykernel
 

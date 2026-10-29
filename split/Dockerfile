@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxml2-dev libssl-dev libcurl4-openssl-dev libhdf5-dev libglpk-dev libgmp3-dev \
         libpng-dev libjpeg-dev libtiff-dev libfontconfig1-dev libfreetype6-dev \
         libharfbuzz-dev libfribidi-dev libicu-dev zlib1g-dev libzstd-dev liblz4-dev \
-        libudunits2-dev libgdal-dev libgeos-dev libproj-dev \
+        libudunits2-dev libgdal-dev libgeos-dev libproj-dev libzmq3-dev \
         python3 python3-venv python3-dev pandoc \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 

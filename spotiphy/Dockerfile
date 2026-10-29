@@ -27,6 +27,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # squidpy 1.6.1 (pinned by spotiphy) needs Python >= 3.10.
 RUN uv venv "${VENV_PATH}" --python python3.10
 
+# setuptools>=81 dropped pkg_resources (and the distutils shim), which older deps still
+# import at build and run time; keep it below 81 for every uv install in this image.
+RUN echo "setuptools<81" > /etc/uv-constraints.txt
+ENV UV_CONSTRAINT=/etc/uv-constraints.txt
+ENV UV_BUILD_CONSTRAINT=/etc/uv-constraints.txt
+RUN uv pip install --no-cache "setuptools<81"
+
 # torch and tensorflow are not declared by spotiphy and must be installed manually
 # (README: torch + tensorflow==2.16.2). torch drives the pyro deconvolution on GPU;
 # tensorflow is only used by StarDist for nuclei segmentation.

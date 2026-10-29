@@ -6,6 +6,8 @@ FROM rocker/rstudio:4.6.1
 SHELL ["/bin/bash", "-c"]
 
 ENV DEBIAN_FRONTEND=noninteractive
+# rgl (an stIHC dependency) needs libGLU and has no display in containers; use its null device.
+ENV RGL_USE_NULL=TRUE
 ENV VENV_PATH="/env"
 ENV PATH="${VENV_PATH}/bin:${PATH}"
 ENV PYTHONNOUSERSITE=true
@@ -15,7 +17,7 @@ ARG STIHC_VERSION="0.1.1"
 RUN apt-get update && apt-get install -y -qq --no-install-recommends \
         build-essential gfortran libxml2-dev libssl-dev libcurl4-openssl-dev \
         libblas-dev liblapack-dev libglpk-dev libpng-dev zlib1g-dev libicu-dev \
-        procps git python3-venv python3-dev \
+        procps git python3-venv python3-dev tcl8.6 tk8.6 libzmq3-dev libglu1-mesa libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Jupyter stack in a venv (for IRkernel / papermill)

@@ -34,6 +34,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN uv venv ${VENV_PATH} --python python3.10
 
+# setuptools>=81 dropped pkg_resources (and the distutils shim), which older deps still
+# import at build and run time; keep it below 81 for every uv install in this image.
+RUN echo "setuptools<81" > /etc/uv-constraints.txt
+ENV UV_CONSTRAINT=/etc/uv-constraints.txt
+ENV UV_BUILD_CONSTRAINT=/etc/uv-constraints.txt
+RUN uv pip install --no-cache "setuptools<81"
+
 # Clone to /delivr so the default config.json paths (/delivr/ilastik/, ./models/...) work.
 # models/ holds the U-Net weights (inference_weights.tar), ilastik random-forest project and
 # the Allen CCF3 annotation (~150 MB, git-lfs) - they are part of the pipeline, so they are pulled here.

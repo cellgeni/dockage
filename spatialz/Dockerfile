@@ -31,6 +31,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN uv python install 3.9 && \
     uv venv "${VENV_PATH}" --python 3.9
 
+# setuptools>=81 dropped pkg_resources (and the distutils shim), which older deps still
+# import at build and run time; keep it below 81 for every uv install in this image.
+RUN echo "setuptools<81" > /etc/uv-constraints.txt
+ENV UV_CONSTRAINT=/etc/uv-constraints.txt
+ENV UV_BUILD_CONSTRAINT=/etc/uv-constraints.txt
+RUN uv pip install --no-cache "setuptools<81"
+
 # torch pinned as upstream (1.13.0+cu117 wheels bundle their own CUDA libs and run on
 # current drivers); remaining pins taken from upstream requirements.txt / Dockerfile.
 RUN uv pip install --no-cache \

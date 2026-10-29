@@ -31,7 +31,7 @@ RUN uv venv "${VENV_PATH}" --python python3.12
 RUN uv pip install --no-cache \
         "mdvtools==${MDVTOOLS_VERSION}" \
         jupyterlab ipykernel papermill && \
-    mdvtools --version
+    mdvtools --help > /dev/null
 
 EXPOSE 5050
 

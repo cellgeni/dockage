@@ -66,7 +66,14 @@ RUN git clone https://github.com/Euro-BioImaging/BatchConvert.git /opt/BatchConv
 
 ENV PATH="/opt/BatchConvert:/opt/bioformats2raw/bin:/opt/bftools:${PATH}"
 
-RUN which batchconvert bfconvert bioformats2raw nextflow pythonexe
+# Jupyter stack in a separate venv (appended to PATH so BatchConvert keeps using system python)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+ENV PYTHONNOUSERSITE=1
+RUN uv venv /env --python /usr/bin/python3 && \
+    VIRTUAL_ENV=/env uv pip install --no-cache jupyterlab ipykernel papermill
+ENV PATH="${PATH}:/env/bin"
+
+RUN which batchconvert bfconvert bioformats2raw nextflow pythonexe jupyter
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

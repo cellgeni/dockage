@@ -1,15 +1,16 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
-ARG BF2RAW_VERSION="0.12.1"
+ARG BF2RAW_VERSION="0.13.0"
 ARG RAW2OME_VERSION="0.10.1"
-ARG BFTOOLS_VERSION="8.3.0"
+ARG BFTOOLS_VERSION="8.5.0"
+ARG OEPNJDK_VERSION=25
 
 SHELL ["/bin/bash", "-c"]
 
 # install base OS packages
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      git wget unzip procps binutils libblosc-dev libjpeg-turbo8-dev openjdk-18-jre-headless
+      git wget unzip procps binutils libblosc-dev libjpeg-turbo8-dev openjdk-$OEPNJDK_VERSION-jre-headless
 ENV JAVA_HOME="/usr/lib/jvm/java-18-openjdk-amd64"
 
 # get bioformats2raw

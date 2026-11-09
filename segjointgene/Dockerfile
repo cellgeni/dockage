@@ -2,6 +2,12 @@
 # Self-training UNet framework for spatial cell-type segmentation with attribution
 # (CID) constrained label propagation. Not a pip package: the code is cloned to
 # /opt/segjointgene and run from there (python main.py ... / scripts/run_cid.sh).
+# main.py sets paths.root to its own (read-only) directory and Hydra writes the run dir
+# under ${paths.root}/experiment, so always pass writable overrides after the CLI flags
+# (later Hydra overrides win), e.g.:
+#   python /opt/segjointgene/main.py --sub_path run1 --net_epoch 100 \
+#       paths.root=/work/out paths.data_dir=/work/data
+# paths.data_dir must be writable too (preprocessing writes Simulation/ NPZ patches there).
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 ARG SEGJOINTGENE_COMMIT="41365a38da32f01fafa785ef094a47fc5c89fec4"

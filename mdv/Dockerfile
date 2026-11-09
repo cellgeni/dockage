@@ -1,7 +1,8 @@
 # MDV (Multi-Dimensional Viewer) - https://github.com/Taylor-CCB-Group/MDV (PyPI: mdvtools)
 # Web-based viewer for large single-cell / spatial / tabular data. The mdvtools wheel
 # bundles the pre-built frontend, so projects can be created and served locally
-# (mdvtools.serverlite.serve_project -> http://localhost:5050) without node/pnpm.
+# without node/pnpm; use the bundled `mdv-serve` launcher (not serve_project, which only
+# binds the container's loopback) -> http://localhost:5050.
 # This installs the slim core; the multi-user DB/chat/auth server (`mdvtools[app]`,
 # Postgres + gunicorn) is better run from upstream's own docker-compose setup.
 FROM python:3.12-slim
@@ -32,6 +33,13 @@ RUN uv pip install --no-cache \
         "mdvtools==${MDVTOOLS_VERSION}" \
         jupyterlab ipykernel papermill && \
     mdvtools --help > /dev/null
+
+# serve_project() binds Flask to the container's loopback only, so a published port is
+# unreachable. mdv-serve wraps create_app() with a --host option (see its docstring):
+#   docker run --rm -p 127.0.0.1:5050:5050 -v $PWD/proj:/proj mdv mdv-serve /proj --host 0.0.0.0
+# Publish on the host loopback only - the viewer has no authentication.
+COPY mdv-serve /usr/local/bin/mdv-serve
+RUN chmod 755 /usr/local/bin/mdv-serve && mdv-serve --help > /dev/null
 
 EXPOSE 5050
 

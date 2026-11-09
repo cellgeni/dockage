@@ -3,8 +3,8 @@
 # subcellular spatial transcriptomics (Xenium, CosMx, MERSCOPE, Stereo-seq).
 # Upstream recommends a GPU with >=12 GB VRAM.
 # Cellpose "cyto" weights (nuclei step) and segmentation-models-pytorch encoder
-# weights are downloaded at runtime (set CELLPOSE_LOCAL_MODELS_PATH / TORCH_HOME to
-# a mounted dir to cache them).
+# weights are downloaded at runtime into ~/.cellpose/models and ~/.cache/torch (set
+# CELLPOSE_LOCAL_MODELS_PATH / TORCH_HOME to another persistent dir to override).
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 ARG BIDCELL_VERSION="1.0.3"
@@ -23,8 +23,9 @@ ENV PYTHONNOUSERSITE=1
 ENV UV_PYTHON_PREFERENCE=only-system
 ENV NUMBA_CACHE_DIR=/tmp
 ENV MPLCONFIGDIR=/tmp
-ENV CELLPOSE_LOCAL_MODELS_PATH=/tmp/cellpose_models
-ENV TORCH_HOME=/tmp/torch
+# CELLPOSE_LOCAL_MODELS_PATH / TORCH_HOME are deliberately left at the libraries' per-user
+# defaults (~/.cellpose/models, ~/.cache/torch): fixed /tmp paths are shared via the host
+# /tmp under Singularity and become unwritable for every user but the first.
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       procps git curl ca-certificates build-essential \

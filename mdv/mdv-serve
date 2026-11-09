@@ -1,0 +1,39 @@
+#!/env/bin/python
+"""Serve an MDV project from inside a container.
+
+mdvtools.serverlite.serve_project() calls Flask's app.run(port=...), which binds only to
+127.0.0.1 *inside* the container, so a Docker-published port can never reach it (and it
+also tries to open a browser). This launcher uses the same create_app() but lets you pick
+the bind address.
+
+  Docker (container has its own network namespace -> bind 0.0.0.0 inside, but publish
+  only on the host's loopback, since the viewer has no authentication):
+    docker run --rm -p 127.0.0.1:5050:5050 -v $PWD/proj:/proj mdv:latest \
+        mdv-serve /proj --host 0.0.0.0
+
+  Singularity (shares the host network -> keep the default 127.0.0.1, then e.g.
+  `ssh -L 5050:localhost:5050 <node>`):
+    singularity exec mdv.sif mdv-serve /path/to/proj
+"""
+import argparse
+
+from mdvtools.mdvproject import MDVProject
+from mdvtools.serverlite import create_app
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("project", help="path to an MDV project directory")
+    p.add_argument("--host", default="127.0.0.1",
+                   help="bind address (default 127.0.0.1; use 0.0.0.0 inside Docker with -p 127.0.0.1:PORT:PORT)")
+    p.add_argument("--port", type=int, default=5050, help="port (default 5050)")
+    p.add_argument("--compress-column-data", action="store_true")
+    a = p.parse_args()
+
+    app = create_app(MDVProject(a.project), compress_column_data=a.compress_column_data)
+    print(f"MDV project {a.project} -> http://{a.host}:{a.port}/", flush=True)
+    app.run(host=a.host, port=a.port)
+
+
+if __name__ == "__main__":
+    main()

@@ -12,7 +12,7 @@
 ## Notes
 
 * GPU image (torch 2.5.1+cu121). The `[full]` training extra is not installed.
-* Models download on first use into `/tmp/instanseg` (`INSTANSEG_*_PATH`), because site-packages is read-only under Singularity.
+* Models download on first use into the per-user `${XDG_CACHE_HOME:-~/.cache}/instanseg/` (a `.pth` start-up hook sets `INSTANSEG_{BIOIMAGEIO,TORCHSCRIPT,MODEL}_PATH` when unset; upstream's default is inside the read-only site-packages). Set those variables yourself to use another persistent location.
 
 ## Usage
 

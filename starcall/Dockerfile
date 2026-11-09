@@ -47,6 +47,19 @@ RUN git clone https://github.com/FowlerLab/starcall-workflow.git /opt/starcall-w
     git submodule update --init --recursive && \
     chmod -R 755 /opt/starcall-workflow
 
+# The calc_background rule uses the old pybasic API (BaSiC(images, verbose=True),
+# prepare(), run(), flatfield_fullsize), which basicpy does not have. Port it to the
+# basicpy API: BaSiC().fit(images) -> .flatfield (already resized to full image size).
+RUN F=/opt/starcall-workflow/workflow/rules/stitching.smk && \
+    sed -i \
+      -e 's/^\([[:space:]]*\)optimizer = BaSiC(\(.*\), verbose=True)$/\1optimizer = BaSiC()\n\1optimizer.fit(\2)/' \
+      -e '/^[[:space:]]*optimizer\.prepare()$/d' \
+      -e '/^[[:space:]]*optimizer\.run()$/d' \
+      -e 's/optimizer\.flatfield_fullsize/optimizer.flatfield/' \
+      "${F}" && \
+    grep -q "optimizer.fit(chan_images" "${F}" && \
+    ! grep -qE "flatfield_fullsize|optimizer\.(prepare|run)\(\)" "${F}"
+
 RUN uv pip install --no-cache \
         torch==2.3.1 torchvision==0.18.1 \
         --index-url https://download.pytorch.org/whl/cu121
@@ -70,7 +83,7 @@ RUN uv pip install --no-cache \
         nd2reader \
         pandas==1.5.3 \
         ome-types \
-        basicpy \
+        basicpy==2.0.0 \
         opencv-python-headless plotly psutil tqdm imageio numba scipy \
         jupyterlab ipykernel papermill
 

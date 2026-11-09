@@ -13,7 +13,7 @@
 
 * GPU image, Python 3.10, torch 2.3.1+cu121 with upstream `setup.py` pins.
 * `scanpy` and `scikit-learn` added (imported but not declared upstream).
-* OmiCLIP weights on Hugging Face are not included.
+* OmiCLIP weights on Hugging Face are not included. Hugging Face downloads go to the per-user `~/.cache/huggingface` (override with `HF_HOME`).
 
 ## Usage
 

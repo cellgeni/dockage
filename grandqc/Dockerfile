@@ -56,7 +56,10 @@ RUN mkdir -p /opt/grandqc/models/td /opt/grandqc/models/qc && \
     wget -q -O /opt/grandqc/models/td/Tissue_Detection_MPP10.pth \
         "https://zenodo.org/records/14507273/files/Tissue_Detection_MPP10.pth?download=1" && \
     for m in GrandQC_MPP1.pth GrandQC_MPP15.pth GrandQC_MPP2.pth; do \
-        wget -q -O /opt/grandqc/models/qc/${m} "https://zenodo.org/records/14041538/files/${m}?download=1"; \
+        wget -q -O /opt/grandqc/models/qc/${m} "https://zenodo.org/records/14041538/files/${m}?download=1" || exit 1; \
+    done && \
+    for f in /opt/grandqc/models/td/Tissue_Detection_MPP10.pth /opt/grandqc/models/qc/GrandQC_MPP{1,15,2}.pth; do \
+        test -s "${f}" || { echo "missing/empty checkpoint: ${f}" >&2; exit 1; }; \
     done && \
     ln -s /opt/grandqc/models /opt/grandqc/01_WSI_inference_OPENSLIDE_QC/models && \
     ln -s /opt/grandqc/models /opt/grandqc/02_WSI_inference_OME_TIFF_QC/models

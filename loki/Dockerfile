@@ -20,7 +20,8 @@ ENV PYTHONNOUSERSITE=true
 ENV UV_PYTHON_PREFERENCE=only-system
 ENV NUMBA_CACHE_DIR=/tmp
 ENV MPLCONFIGDIR=/tmp
-ENV HF_HOME=/tmp/hf_home
+# HF_HOME is intentionally left at the per-user default (~/.cache/huggingface): a fixed
+# /tmp path is shared via the host /tmp under Singularity (permission clashes, mixed auth).
 
 # No releases upstream (package `loki` 0.0.1 in src/); pin commit
 ARG LOKI_COMMIT="c6d3eed94dc18c5c19a10120828578d5a09d5347"

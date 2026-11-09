@@ -14,7 +14,7 @@
 * GPU image. TensorFlow 2.15.1 instead of upstream's 2.13.0, which clashes with torch and basicpy.
 * Workflow is in `/opt/starcall-workflow`. CellProfiler is not included.
 * `setuptools<81` is pinned because dependencies still import `pkg_resources`.
-* :warning: The workflow's BaSiC rule uses an old pybasic-style API and may fail with current basicpy.
+* The workflow's `calc_background` rule used the old pybasic API (`prepare()`/`run()`/`flatfield_fullsize`); it is patched to the basicpy API (`BaSiC().fit(images)`, `.flatfield`), with `basicpy==2.0.0` pinned.
 
 ## Usage
 

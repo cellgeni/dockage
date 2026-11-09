@@ -9,6 +9,7 @@
 #    they have cp38 wheels; R 4.1.3 with Seurat 4 (upstream: Seurat 3.2.0) and
 #    liger 0.5.0.9000 (tag v0.5.0, the old `library(liger)` API used by Codes/Impute/LIGER.r).
 #  - CPU-only torch (gimVI/Tangram/stPlus run on CPU; pass device='cpu').
+#  - SpatialGenes.py is patched (novoSpaRc/SpaOTsc stray np.save, Tangram hard-coded CUDA).
 #  - The *deconvolution* part (Cell2location 0.6a0, RCTD, SpatialDWLS/Giotto, SPOTlight,
 #    STRIDE, DSTG, DestVI, Stereoscope) needs many mutually-incompatible old environments
 #    and is NOT included; see the separate cell2location/RCTD/Giotto images in this repo.
@@ -45,6 +46,19 @@ RUN apt-get update && apt-get install -y -qq --no-install-recommends \
 RUN git clone https://github.com/QuKunLab/SpatialBenchmarking.git /opt/SpatialBenchmarking && \
     cd /opt/SpatialBenchmarking && \
     git checkout "${SPATIALBENCHMARKING_COMMIT}"
+
+# Upstream bugs in Benchmarking/SpatialGenes.py at this commit:
+#  - novoSpaRc_impute() and SpaOTsc_impute() contain a stray debug `np.save(novo.npy, gw)`
+#    (`novo` undefined; `gw` too in SpaOTsc) -> NameError before returning. Drop it.
+#  - Tangram_impute() hard-codes torch.device('cuda:0') and ignores the `device` argument,
+#    which fails with this CPU-only torch. Honour `device` (fall back to CUDA if available, else CPU).
+RUN F=/opt/SpatialBenchmarking/Benchmarking/SpatialGenes.py && \
+    sed -i \
+      -e '/^[[:space:]]*np\.save(novo\.npy, gw)$/d' \
+      -e "s/^\([[:space:]]*\)device = torch\.device('cuda:0')$/\1device = torch.device(self.device or ('cuda:0' if torch.cuda.is_available() else 'cpu'))/" \
+      "${F}" && \
+    ! grep -q "novo\.npy" "${F}" && \
+    grep -q "torch.device(self.device or" "${F}"
 
 # ---- Python environment ----
 RUN uv venv ${VENV_PATH} --python python3.8

@@ -12,7 +12,7 @@
 ## Notes
 
 * GPU image; torch 2.1.2+cu121 and key versions taken from upstream's `pdm.lock` (cellpose 2.2.3, numpy 1.24.4, segmentation-models-pytorch 0.3.3).
-* Cellpose and encoder weights download at runtime.
+* Cellpose and encoder weights download at runtime into the per-user `~/.cellpose/models` and `~/.cache/torch` (override with `CELLPOSE_LOCAL_MODELS_PATH` / `TORCH_HOME`).
 
 ## Usage
 

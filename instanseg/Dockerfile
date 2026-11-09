@@ -2,7 +2,8 @@
 # PyTorch cell and nucleus instance segmentation for fluorescence and brightfield
 # (incl. whole-slide) microscopy images. Python API + `inference` CLI.
 # Pretrained models (e.g. "fluorescence_nuclei_and_cells", "brightfield_nuclei") are
-# downloaded from GitHub releases on first use (cached under INSTANSEG_BIOIMAGEIO_PATH).
+# downloaded from GitHub releases on first use (cached under INSTANSEG_BIOIMAGEIO_PATH,
+# default ~/.cache/instanseg/bioimageio_models - see the .pth hook below).
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 ARG INSTANSEG_VERSION="0.1.2"
@@ -20,11 +21,6 @@ ENV PATH="${VENV_PATH}/bin:${PATH}"
 ENV PYTHONNOUSERSITE=1
 ENV UV_PYTHON_PREFERENCE=only-system
 ENV MPLCONFIGDIR=/tmp
-# Defaults point inside site-packages (read-only under Singularity); override with a
-# mounted path to keep downloaded models between runs.
-ENV INSTANSEG_BIOIMAGEIO_PATH=/tmp/instanseg/bioimageio_models
-ENV INSTANSEG_TORCHSCRIPT_PATH=/tmp/instanseg/torchscripts
-ENV INSTANSEG_MODEL_PATH=/tmp/instanseg/models
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       procps git curl ca-certificates build-essential \
@@ -52,6 +48,15 @@ RUN uv pip install --no-cache \
       --index-strategy unsafe-best-match
 
 RUN python -c "from instanseg import InstanSeg; import torch; print('torch', torch.__version__)"
+
+# InstanSeg's INSTANSEG_{BIOIMAGEIO,TORCHSCRIPT,MODEL}_PATH defaults point inside
+# site-packages (read-only under Singularity). Fixed /tmp paths are unsafe on shared hosts
+# (Singularity binds the host /tmp: cross-user ownership clashes, and a cached instanseg.pt
+# is loaded unverified). This .pth hook runs at interpreter start-up and, only for variables
+# the user has not set, defaults them to the per-user ${XDG_CACHE_HOME:-~/.cache}/instanseg/.
+COPY instanseg_user_paths.pth ${VENV_PATH}/lib/python3.10/site-packages/
+RUN python -c "import os; p = os.environ['INSTANSEG_MODEL_PATH']; assert p.startswith(os.path.expanduser('~')), p; print(p)" && \
+    INSTANSEG_MODEL_PATH=/custom python -c "import os; assert os.environ['INSTANSEG_MODEL_PATH'] == '/custom'"
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

@@ -3,8 +3,10 @@
 # model features, cell segmentation, vision-language models; results stored as SpatialData.
 #
 # Foundation-model weights are NOT baked in: they are downloaded on first use from
-# Hugging Face into $HF_HOME (many are gated - set HF_TOKEN). Mount/override HF_HOME
-# to a persistent location on the cluster.
+# Hugging Face into $HF_HOME (many are gated - set HF_TOKEN). HF_HOME is intentionally
+# not set here, so it stays per-user (~/.cache/huggingface); a fixed /tmp path would be
+# shared via the host /tmp under Singularity (permission clashes, mixed auth state).
+# Set HF_HOME yourself to use another persistent per-user location.
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
@@ -19,7 +21,6 @@ ENV PYTHONNOUSERSITE=true
 ENV UV_PYTHON_INSTALL_DIR="/opt/python"
 ENV NUMBA_CACHE_DIR=/tmp
 ENV MPLCONFIGDIR=/tmp
-ENV HF_HOME=/tmp/hf_home
 ENV JAVA_HOME=/usr/lib/jvm/default-java
 
 ARG LAZYSLIDE_VERSION="0.13.0"

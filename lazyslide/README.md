@@ -12,7 +12,7 @@
 ## Notes
 
 * GPU image, Python 3.12, torch 2.5.1+cu121.
-* Foundation-model weights download from Hugging Face on first use; gated models need `HF_TOKEN`.
+* Foundation-model weights download from Hugging Face on first use into the per-user `~/.cache/huggingface` (override with `HF_HOME`); gated models need `HF_TOKEN`.
 
 ## Usage
 

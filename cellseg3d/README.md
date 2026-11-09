@@ -12,7 +12,8 @@
 ## Notes
 
 * GPU image (torch 2.5.1+cu121). ONNX models run on CPU (`onnx-cpu`), because current onnxruntime-gpu needs cuDNN 9.
-* Includes Qt/X11 libraries for napari and an OpenCL loader for pyclesperanto. Model weights download on first use.
+* Includes Qt/X11 libraries for napari and an OpenCL loader for pyclesperanto.
+* All pretrained weights (TRAILMAP_MS, SegResNet, VNet, SwinUNetR, WNet3D and WNet ONNX, about 0.9 GB) are baked into the package's `pretrained/` folder. CellSeg3D always extracts downloads there, and that folder is read-only under Singularity.
 * No CLI: use it as a Python library or napari plugin.
 
 ## Usage

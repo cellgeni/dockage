@@ -35,8 +35,9 @@ RUN uv pip install --no-cache \
     mdvtools --help > /dev/null
 
 # serve_project() binds Flask to the container's loopback only, so a published port is
-# unreachable. mdv-serve wraps create_app() with a --host option (see its docstring):
-#   docker run --rm -p 127.0.0.1:5050:5050 -v $PWD/proj:/proj mdv mdv-serve /proj --host 0.0.0.0
+# unreachable. mdv-serve wraps create_app() with a container-aware bind address: 0.0.0.0
+# under Docker/Podman, 127.0.0.1 under Singularity (host network) - see its docstring:
+#   docker run --rm -p 127.0.0.1:5050:5050 -v $PWD/proj:/proj mdv mdv-serve /proj
 # Publish on the host loopback only - the viewer has no authentication.
 COPY mdv-serve /usr/local/bin/mdv-serve
 RUN chmod 755 /usr/local/bin/mdv-serve && mdv-serve --help > /dev/null

@@ -1,7 +1,7 @@
 # CellSeg3D (napari-cellseg3d) - https://github.com/AdaptiveMotorControlLab/CellSeg3D
 # Self-supervised / supervised 3D cell segmentation (WNet3D, SwinUNetR, SegResNet...)
 # for fluorescence volumes; napari plugin that can also be used as a Python library.
-# Pretrained weights are downloaded by the plugin on first use (not baked in).
+# Pretrained weights are baked in (the plugin's download target is inside read-only site-packages).
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 ARG CELLSEG3D_VERSION="0.2.4"
@@ -56,6 +56,22 @@ RUN uv pip install --no-cache \
       --index-strategy unsafe-best-match
 
 RUN python -c "import torch, monai, napari_cellseg3d; print('torch', torch.__version__, 'monai', monai.__version__)"
+
+# Pretrained weights. CellSeg3D's WeightsDownloader always extracts into
+# napari_cellseg3d/code_models/models/pretrained inside site-packages (read-only under
+# Singularity) and skips the download when the .pth/.onnx is already there, so bake all
+# supported checkpoints in (~0.9 GB, from pretrained_model_urls.json; pinned HF revision).
+ARG CELLSEG3D_WEIGHTS_REV="09f946501deea177be59a7a2c4dc1c7ba36f3c94"
+RUN D="${VENV_PATH}/lib/python3.10/site-packages/napari_cellseg3d/code_models/models/pretrained" && \
+    test -f "${D}/pretrained_model_urls.json" && \
+    for a in TRAILMAP_latest SegResNet_latest VNet_latest SwinUNetR_latest wnet_latest wnet_onnx; do \
+        curl -fsSL --retry 3 "https://huggingface.co/C-Achard/cellseg3d/resolve/${CELLSEG3D_WEIGHTS_REV}/${a}.tar.gz" \
+          | tar -xz --no-same-owner --no-same-permissions -C "${D}" || exit 1; \
+    done && \
+    for f in TRAILMAP_MS_best_metric.pth SegResNet_latest.pth VNet_latest.pth SwinUNetR_latest.pth wnet_latest.pth wnet.onnx; do \
+        test -s "${D}/${f}" || { echo "missing/empty weights: ${f}" >&2; exit 1; }; \
+        chmod 644 "${D}/${f}"; \
+    done
 
 COPY Dockerfile /docker/
 RUN chmod -R 755 /docker

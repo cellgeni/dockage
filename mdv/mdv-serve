@@ -3,29 +3,38 @@
 
 mdvtools.serverlite.serve_project() calls Flask's app.run(port=...), which binds only to
 127.0.0.1 *inside* the container, so a Docker-published port can never reach it (and it
-also tries to open a browser). This launcher uses the same create_app() but lets you pick
-the bind address.
+also tries to open a browser). This launcher uses the same create_app() with a
+container-aware bind address:
 
-  Docker (container has its own network namespace -> bind 0.0.0.0 inside, but publish
-  only on the host's loopback, since the viewer has no authentication):
-    docker run --rm -p 127.0.0.1:5050:5050 -v $PWD/proj:/proj mdv:latest \
-        mdv-serve /proj --host 0.0.0.0
+  * Docker/Podman (own network namespace): binds 0.0.0.0 so a published port works.
+    The viewer has no authentication, so publish on the host's loopback only:
+      docker run --rm -p 127.0.0.1:5050:5050 -v $PWD/proj:/proj mdv:latest mdv-serve /proj
+  * Singularity/Apptainer or bare host (shares the host network): binds 127.0.0.1, so the
+    viewer is not exposed to the network; reach it with e.g. `ssh -L 5050:localhost:5050 <node>`:
+      singularity exec mdv.sif mdv-serve /path/to/proj
 
-  Singularity (shares the host network -> keep the default 127.0.0.1, then e.g.
-  `ssh -L 5050:localhost:5050 <node>`):
-    singularity exec mdv.sif mdv-serve /path/to/proj
+Override with --host or the MDV_HOST environment variable.
 """
 import argparse
+import os
 
 from mdvtools.mdvproject import MDVProject
 from mdvtools.serverlite import create_app
 
 
+def default_host() -> str:
+    if os.environ.get("MDV_HOST"):
+        return os.environ["MDV_HOST"]
+    shares_host_network = any(os.environ.get(v) for v in ("SINGULARITY_CONTAINER", "APPTAINER_CONTAINER"))
+    in_own_netns = os.path.exists("/.dockerenv") or os.path.exists("/run/.containerenv")
+    return "0.0.0.0" if in_own_netns and not shares_host_network else "127.0.0.1"
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("project", help="path to an MDV project directory")
-    p.add_argument("--host", default="127.0.0.1",
-                   help="bind address (default 127.0.0.1; use 0.0.0.0 inside Docker with -p 127.0.0.1:PORT:PORT)")
+    p.add_argument("--host", default=default_host(),
+                   help="bind address (default: 0.0.0.0 under Docker/Podman, else 127.0.0.1; env MDV_HOST)")
     p.add_argument("--port", type=int, default=5050, help="port (default 5050)")
     p.add_argument("--compress-column-data", action="store_true")
     a = p.parse_args()

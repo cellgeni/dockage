@@ -1,0 +1,68 @@
+# segger 0.3.1 (https://github.com/dpeerlab/segger, tag v0.3.1)
+# Dependency pins mirror the upstream pixi.toml `cuda121` environment:
+# Python 3.11, torch 2.5 (cu121), RAPIDS 24.10, cupy 12.x, spatialdata 0.4.x.
+# 0.3.1 is the last release on CUDA 12; 0.4.0 moves to CUDA 13.
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+ARG SEGGER_VERSION=0.3.1
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    HOME=/tmp \
+    VENV_PATH=/env \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    PYTHONNOUSERSITE=1 \
+    UV_PYTHON_INSTALL_DIR=/usr/local/share/uv \
+    UV_NO_CACHE=1 \
+    CUPY_CACHE_DIR=/tmp/cupy_cache \
+    NUMBA_CUDA_USE_NVIDIA_BINDING=1 \
+    SEGGER_NUM_WORKERS=0 \
+    PATH=/env/bin:$PATH
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    locales \
+    procps \
+    libgomp1 \
+    libxcb1 \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libsm6 \
+    libglib2.0-0 \
+    libgl1 \
+    && locale-gen en_US.UTF-8 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# uv manages the Python 3.11 interpreter and the venv
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh \
+    && uv venv ${VENV_PATH} --python 3.11
+
+# GPU stack + segger, resolved in one pass like `pixi install -e cuda121`
+RUN uv pip install --python ${VENV_PATH}/bin/python \
+    --index-strategy unsafe-best-match \
+    --extra-index-url https://pypi.nvidia.com \
+    --extra-index-url https://download.pytorch.org/whl/cu121 \
+    --find-links https://data.pyg.org/whl/torch-2.5.0+cu121.html \
+    "torch==2.5.*" \
+    "torchvision==0.20.*" \
+    lightning \
+    torch_geometric \
+    torch-scatter \
+    torch-sparse \
+    "cuspatial-cu12==24.10.*" \
+    "cudf-cu12==24.10.*" \
+    "cuml-cu12==24.10.*" \
+    "cugraph-cu12==24.10.*" \
+    "cupy-cuda12x>=12.2,<13.0" \
+    "spatialdata>=0.4.0,<0.5" \
+    "setuptools>=81.0.0,<82" \
+    "segger @ git+https://github.com/dpeerlab/segger.git@v${SEGGER_VERSION}" \
+    jupyterlab ipykernel papermill
+
+WORKDIR /workspace
+COPY Dockerfile.0.3.1 /docker/Dockerfile
+RUN chmod -R 755 /docker

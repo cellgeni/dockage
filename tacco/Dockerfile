@@ -28,6 +28,7 @@ RUN uv venv ${VENV_PATH} --python python3.12
 
 RUN uv pip install --no-cache \
       "tacco==${TACCO_VERSION}" \
+      "pandas<3" \
       jupyterlab ipykernel papermill
 
 RUN python -c "import tacco, importlib.metadata as m; print('tacco', m.version('tacco'))"

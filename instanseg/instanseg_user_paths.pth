@@ -1,0 +1,1 @@
+import os; (lambda c: [os.environ.setdefault("INSTANSEG_%s_PATH" % k, os.path.join(c, "instanseg", v)) for k, v in (("BIOIMAGEIO", "bioimageio_models"), ("TORCHSCRIPT", "torchscripts"), ("MODEL", "models"))])(os.environ.get("XDG_CACHE_HOME") or os.path.join(os.path.expanduser("~"), ".cache"))

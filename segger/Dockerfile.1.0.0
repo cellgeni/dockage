@@ -44,11 +44,12 @@ RUN uv pip install \
     "segger[spatialdata]==${SEGGER_VERSION}" \
     jupyterlab ipykernel papermill
 
+# Import check only: the `segger` CLI initialises RMM on the GPU at import time,
+# so `segger --help` cannot run during a GPU-less docker build.
 RUN python -c "import segger, torch, cudf, cuspa; \
 from importlib.metadata import version; \
 assert version('segger') == '${SEGGER_VERSION}', version('segger'); \
-print('segger', version('segger'), 'torch', torch.__version__, 'cuda', torch.version.cuda)" \
-    && segger --help > /dev/null
+print('segger', version('segger'), 'torch', torch.__version__, 'cuda', torch.version.cuda)"
 
 WORKDIR /workspace
 COPY Dockerfile.1.0.0 /docker/Dockerfile

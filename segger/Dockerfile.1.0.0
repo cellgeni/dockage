@@ -1,0 +1,55 @@
+# segger 1.0.0 (https://pypi.org/project/segger/1.0.0/, https://github.com/dpeerlab/segger)
+# Requires Python 3.13 and CUDA 13: torch 2.14 (cu130), RAPIDS >=26 (cu13), cuspa-cu13.
+# The CUDA runtime comes from the pip wheels, so a plain Python base image is enough
+# (same approach as the upstream Dockerfile); the host only needs a CUDA 13 capable driver.
+# Note: CUDA 13 drops Volta (sm_70, e.g. V100); run on Turing or newer GPUs.
+FROM python:3.13-slim-bookworm
+
+ARG SEGGER_VERSION=1.0.0
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    HOME=/tmp \
+    VENV_PATH=/env \
+    VIRTUAL_ENV=/env \
+    PATH=/env/bin:$PATH \
+    PYTHONNOUSERSITE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_PYTHON_PREFERENCE=only-system \
+    UV_NO_CACHE=1 \
+    CUPY_CACHE_DIR=/tmp/cupy_cache \
+    NUMBA_CACHE_DIR=/tmp \
+    MPLCONFIGDIR=/tmp \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+COPY --from=ghcr.io/astral-sh/uv:0.13.9 /uv /uvx /usr/local/bin/
+
+# libgl1/libglib2.0-0 for opencv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    procps \
+    libgomp1 \
+    libgl1 \
+    libglib2.0-0 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN uv venv ${VENV_PATH} --python /usr/local/bin/python3.13
+
+# Indexes mirror upstream pyproject.toml [tool.uv]: PyTorch cu130 + NVIDIA PyPI
+RUN uv pip install \
+    --index-strategy unsafe-best-match \
+    --extra-index-url https://download.pytorch.org/whl/cu130 \
+    --extra-index-url https://pypi.nvidia.com \
+    "segger[spatialdata]==${SEGGER_VERSION}" \
+    jupyterlab ipykernel papermill
+
+RUN python -c "import segger, torch, cudf, cuspa; \
+from importlib.metadata import version; \
+assert version('segger') == '${SEGGER_VERSION}', version('segger'); \
+print('segger', version('segger'), 'torch', torch.__version__, 'cuda', torch.version.cuda)" \
+    && segger --help > /dev/null
+
+WORKDIR /workspace
+COPY Dockerfile.1.0.0 /docker/Dockerfile
+RUN chmod -R 755 /docker

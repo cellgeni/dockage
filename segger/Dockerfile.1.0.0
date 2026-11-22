@@ -1,11 +1,16 @@
 # segger 1.0.0 (https://pypi.org/project/segger/1.0.0/, https://github.com/dpeerlab/segger)
 # Requires Python 3.13 and CUDA 13: torch 2.14 (cu130), RAPIDS >=26 (cu13), cuspa-cu13.
-# The CUDA runtime comes from the pip wheels, so a plain Python base image is enough
-# (same approach as the upstream Dockerfile); the host only needs a CUDA 13 capable driver.
+# The CUDA 13.0 runtime comes from the pip wheels (same approach as the upstream Dockerfile).
+# The CUDA 13 driver (libcuda 580) is shipped too, via NVIDIA's cuda-compat-13-0 package,
+# so the image also runs on hosts with an older driver, e.g. the farm L40S nodes on
+# 550.163.01 / CUDA 12.4. Forward compat needs a datacenter GPU (A100, L40S, H100, ...).
+# Hosts on a driver branch newer than 580 should not use the compat libcuda: run there with
+# LD_LIBRARY_PATH cleared (e.g. SINGULARITYENV_LD_LIBRARY_PATH=).
 # Note: CUDA 13 drops Volta (sm_70, e.g. V100); run on Turing or newer GPUs.
 FROM python:3.13-slim-bookworm
 
 ARG SEGGER_VERSION=1.0.0
+ARG CUDA_COMPAT_VERSION=580.196.07-1
 
 ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/tmp \
@@ -44,12 +49,27 @@ RUN uv pip install \
     "segger[spatialdata]==${SEGGER_VERSION}" \
     jupyterlab ipykernel papermill
 
+# CUDA 13.0 forward-compat driver -> /usr/local/cuda-13.0/compat. On LD_LIBRARY_PATH it is
+# found before the host libcuda that singularity --nv / the NVIDIA runtime adds.
+ADD https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb /tmp/cuda-keyring.deb
+RUN dpkg -i /tmp/cuda-keyring.deb \
+    && rm /tmp/cuda-keyring.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends cuda-compat-13-0=${CUDA_COMPAT_VERSION} \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+ENV LD_LIBRARY_PATH=/usr/local/cuda-13.0/compat
+
 # Import check only: the `segger` CLI initialises RMM on the GPU at import time,
 # so `segger --help` cannot run during a GPU-less docker build.
 RUN python -c "import segger, torch, cudf, cuspa; \
 from importlib.metadata import version; \
 assert version('segger') == '${SEGGER_VERSION}', version('segger'); \
 print('segger', version('segger'), 'torch', torch.__version__, 'cuda', torch.version.cuda)"
+# libcuda.so.1 must resolve to the compat driver (dlopen works without a GPU).
+RUN python -c "import ctypes; ctypes.CDLL('libcuda.so.1'); \
+assert '/usr/local/cuda-13.0/compat/libcuda.so.580' in open('/proc/self/maps').read(), 'compat libcuda not loaded'; \
+print('cuda-compat OK')"
 
 WORKDIR /workspace
 COPY Dockerfile.1.0.0 /docker/Dockerfile
